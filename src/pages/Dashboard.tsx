@@ -558,10 +558,34 @@ function DashboardContent() {
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b h-14 flex items-center justify-between px-6">
           <h1 className="text-lg font-semibold">{tabTitles[activeTab]}</h1>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
-              TechDeals247
-            </div>
+            {mockStores.length > 1 ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs hover:bg-surface-2 transition-colors cursor-pointer">
+                    <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
+                    {activeStore.name}
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-52 p-1" align="end">
+                  {mockStores.map(s => (
+                    <button key={s.id} onClick={() => setActiveStoreId(s.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded hover:bg-surface-1 transition-colors ${activeStoreId === s.id ? 'bg-surface-1 font-medium' : ''}`}>
+                      <div className="w-7 h-7 rounded-md gradient-primary-bg flex items-center justify-center text-primary-foreground text-[10px] font-bold">{s.initials}</div>
+                      <div className="text-left">
+                        <p className="text-sm">{s.name}</p>
+                      </div>
+                      {activeStoreId === s.id && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-success" />}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
+                {activeStore.name}
+              </div>
+            )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md"><Bell className="h-4 w-4" /></Button>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md"><RefreshCw className="h-4 w-4" /></Button>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md" onClick={handleSignOut}><LogOut className="h-4 w-4" /></Button>
@@ -569,8 +593,8 @@ function DashboardContent() {
         </header>
 
         <main className="p-6">
-          {activeTab === 'overview' && <OverviewTab />}
-          {activeTab === 'orders' && <OrdersTab />}
+          {activeTab === 'overview' && <OverviewTab store={activeStore} />}
+          {activeTab === 'orders' && <OrdersTab store={activeStore} />}
           {activeTab === 'autolister' && <AutolisterTab />}
           {activeTab === 'stores' && <StoresTab />}
         </main>

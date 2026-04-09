@@ -35,67 +35,21 @@ interface StoreData {
   soldCount: number;
 }
 
-const mockOrdersDefault = [
-  { id: '#AB-7291', asin: 'B09V3KXJPB', buyer: 'Sarah Mitchell', status: 'Fulfilled', profit: '$12.40', time: '2 min ago' },
-  { id: '#AB-7290', asin: 'B08N5WRWNW', buyer: 'James Kim', status: 'Tracking', profit: '$8.90', time: '15 min ago' },
-  { id: '#AB-7289', asin: 'B07ZPKN6YR', buyer: 'Lisa Rodriguez', status: 'Pending', profit: '$15.20', time: '32 min ago' },
-  { id: '#AB-7288', asin: 'B09B8DQ26F', buyer: 'Mike Davis', status: 'Processing', profit: '$6.70', time: '1h ago' },
-  { id: '#AB-7287', asin: 'B0BSHF7WHW', buyer: 'Emma Wilson', status: 'Fulfilled', profit: '$22.10', time: '2h ago' },
-  { id: '#AB-7286', asin: 'B0BN1HP798', buyer: 'Chris Lee', status: 'Fulfilled', profit: '$9.30', time: '3h ago' },
+const mockOrdersDefault: { id: string; asin: string; buyer: string; status: string; profit: string; time: string }[] = [];
+
+const emptyChartData = [
+  { name: 'Mon', profit: 0, revenue: 0 }, { name: 'Tue', profit: 0, revenue: 0 },
+  { name: 'Wed', profit: 0, revenue: 0 }, { name: 'Thu', profit: 0, revenue: 0 },
+  { name: 'Fri', profit: 0, revenue: 0 }, { name: 'Sat', profit: 0, revenue: 0 },
+  { name: 'Sun', profit: 0, revenue: 0 },
 ];
 
-const mockStores: StoreData[] = [
-  {
-    id: 'store-1',
-    name: 'TechDeals247',
-    initials: 'TD',
-    orders: mockOrdersDefault,
-    revenueChart: [
-      { name: 'Mon', profit: 3200, revenue: 4800 }, { name: 'Tue', profit: 4100, revenue: 6200 },
-      { name: 'Wed', profit: 3800, revenue: 5400 }, { name: 'Thu', profit: 5200, revenue: 7800 },
-      { name: 'Fri', profit: 4600, revenue: 6900 }, { name: 'Sat', profit: 6100, revenue: 8200 },
-      { name: 'Sun', profit: 5400, revenue: 7100 },
-    ],
-    activeListings: [
-      { name: 'Mon', value: 820 }, { name: 'Tue', value: 835 }, { name: 'Wed', value: 842 },
-      { name: 'Thu', value: 838 }, { name: 'Fri', value: 847 }, { name: 'Sat', value: 855 }, { name: 'Sun', value: 861 },
-    ],
-    totalSold: [
-      { name: 'Mon', value: 12 }, { name: 'Tue', value: 18 }, { name: 'Wed', value: 15 },
-      { name: 'Thu', value: 22 }, { name: 'Fri', value: 19 }, { name: 'Sat', value: 28 }, { name: 'Sun', value: 24 },
-    ],
-    listingsCount: 6532,
-    soldCount: 961,
-  },
-  {
-    id: 'store-2',
-    name: 'GadgetVault',
-    initials: 'GV',
-    orders: [
-      { id: '#GV-4011', asin: 'B0CJ3HLZRL', buyer: 'Amy Chen', status: 'Fulfilled', profit: '$18.50', time: '5 min ago' },
-      { id: '#GV-4010', asin: 'B0B9XQ1Z5P', buyer: 'Tom Harris', status: 'Tracking', profit: '$7.20', time: '22 min ago' },
-      { id: '#GV-4009', asin: 'B0CDQM3QBZ', buyer: 'Nina Patel', status: 'Processing', profit: '$11.80', time: '45 min ago' },
-      { id: '#GV-4008', asin: 'B0C1H2XFQN', buyer: 'Derek Jones', status: 'Fulfilled', profit: '$25.00', time: '1h ago' },
-      { id: '#GV-4007', asin: 'B0BXKR5ZJ3', buyer: 'Mia Torres', status: 'Pending', profit: '$9.60', time: '2h ago' },
-    ],
-    revenueChart: [
-      { name: 'Mon', profit: 1800, revenue: 3100 }, { name: 'Tue', profit: 2400, revenue: 3900 },
-      { name: 'Wed', profit: 2100, revenue: 3500 }, { name: 'Thu', profit: 3100, revenue: 5200 },
-      { name: 'Fri', profit: 2800, revenue: 4600 }, { name: 'Sat', profit: 3600, revenue: 5800 },
-      { name: 'Sun', profit: 3200, revenue: 5100 },
-    ],
-    activeListings: [
-      { name: 'Mon', value: 410 }, { name: 'Tue', value: 418 }, { name: 'Wed', value: 425 },
-      { name: 'Thu', value: 420 }, { name: 'Fri', value: 432 }, { name: 'Sat', value: 440 }, { name: 'Sun', value: 445 },
-    ],
-    totalSold: [
-      { name: 'Mon', value: 8 }, { name: 'Tue', value: 11 }, { name: 'Wed', value: 9 },
-      { name: 'Thu', value: 14 }, { name: 'Fri', value: 12 }, { name: 'Sat', value: 19 }, { name: 'Sun', value: 16 },
-    ],
-    listingsCount: 3218,
-    soldCount: 489,
-  },
+const emptySparkline = [
+  { name: 'Mon', value: 0 }, { name: 'Tue', value: 0 }, { name: 'Wed', value: 0 },
+  { name: 'Thu', value: 0 }, { name: 'Fri', value: 0 }, { name: 'Sat', value: 0 }, { name: 'Sun', value: 0 },
 ];
+
+const mockStores: StoreData[] = [];
 
 const mockListings = [
   { title: 'Wireless Bluetooth Earbuds', asin: 'B09V3KXJPB', ebayPrice: 34.99, amazonCost: 22.50, margin: 35.7, sales30d: 48, active: true },

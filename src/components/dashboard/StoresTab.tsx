@@ -53,7 +53,9 @@ export function StoresTab({ storeData, loading }: StoresTabProps) {
                   <Store className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">{storeData.ebay_username}</p>
+                  <p className="text-sm font-semibold">
+                    {storeData.ebay_username || "eBay Store"}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Connected {new Date(storeData.connected_at).toLocaleDateString()}
                   </p>

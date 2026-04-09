@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plane, LayoutDashboard, ShoppingCart, List, Store, Settings, Bell, RefreshCw, LogOut, Search, ChevronDown, ChevronLeft, ChevronRight, Plus, Lock, Unlink, ToggleLeft, ToggleRight, TrendingUp, TrendingDown, DollarSign, Package, Users, CreditCard, BarChart3, ShoppingBag } from 'lucide-react';
+import { Plane, LayoutDashboard, ShoppingCart, List, Store, Settings, Bell, RefreshCw, LogOut, Search, ChevronDown, ChevronLeft, ChevronRight, Plus, Lock, Unlink, ToggleLeft, ToggleRight, TrendingUp, TrendingDown, DollarSign, Package, Users, CreditCard, BarChart3, ShoppingBag, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';

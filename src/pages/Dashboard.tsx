@@ -35,74 +35,23 @@ interface StoreData {
   soldCount: number;
 }
 
-const mockOrdersDefault = [
-  { id: '#AB-7291', asin: 'B09V3KXJPB', buyer: 'Sarah Mitchell', status: 'Fulfilled', profit: '$12.40', time: '2 min ago' },
-  { id: '#AB-7290', asin: 'B08N5WRWNW', buyer: 'James Kim', status: 'Tracking', profit: '$8.90', time: '15 min ago' },
-  { id: '#AB-7289', asin: 'B07ZPKN6YR', buyer: 'Lisa Rodriguez', status: 'Pending', profit: '$15.20', time: '32 min ago' },
-  { id: '#AB-7288', asin: 'B09B8DQ26F', buyer: 'Mike Davis', status: 'Processing', profit: '$6.70', time: '1h ago' },
-  { id: '#AB-7287', asin: 'B0BSHF7WHW', buyer: 'Emma Wilson', status: 'Fulfilled', profit: '$22.10', time: '2h ago' },
-  { id: '#AB-7286', asin: 'B0BN1HP798', buyer: 'Chris Lee', status: 'Fulfilled', profit: '$9.30', time: '3h ago' },
+const mockOrdersDefault: { id: string; asin: string; buyer: string; status: string; profit: string; time: string }[] = [];
+
+const emptyChartData = [
+  { name: 'Mon', profit: 0, revenue: 0 }, { name: 'Tue', profit: 0, revenue: 0 },
+  { name: 'Wed', profit: 0, revenue: 0 }, { name: 'Thu', profit: 0, revenue: 0 },
+  { name: 'Fri', profit: 0, revenue: 0 }, { name: 'Sat', profit: 0, revenue: 0 },
+  { name: 'Sun', profit: 0, revenue: 0 },
 ];
 
-const mockStores: StoreData[] = [
-  {
-    id: 'store-1',
-    name: 'TechDeals247',
-    initials: 'TD',
-    orders: mockOrdersDefault,
-    revenueChart: [
-      { name: 'Mon', profit: 3200, revenue: 4800 }, { name: 'Tue', profit: 4100, revenue: 6200 },
-      { name: 'Wed', profit: 3800, revenue: 5400 }, { name: 'Thu', profit: 5200, revenue: 7800 },
-      { name: 'Fri', profit: 4600, revenue: 6900 }, { name: 'Sat', profit: 6100, revenue: 8200 },
-      { name: 'Sun', profit: 5400, revenue: 7100 },
-    ],
-    activeListings: [
-      { name: 'Mon', value: 820 }, { name: 'Tue', value: 835 }, { name: 'Wed', value: 842 },
-      { name: 'Thu', value: 838 }, { name: 'Fri', value: 847 }, { name: 'Sat', value: 855 }, { name: 'Sun', value: 861 },
-    ],
-    totalSold: [
-      { name: 'Mon', value: 12 }, { name: 'Tue', value: 18 }, { name: 'Wed', value: 15 },
-      { name: 'Thu', value: 22 }, { name: 'Fri', value: 19 }, { name: 'Sat', value: 28 }, { name: 'Sun', value: 24 },
-    ],
-    listingsCount: 6532,
-    soldCount: 961,
-  },
-  {
-    id: 'store-2',
-    name: 'GadgetVault',
-    initials: 'GV',
-    orders: [
-      { id: '#GV-4011', asin: 'B0CJ3HLZRL', buyer: 'Amy Chen', status: 'Fulfilled', profit: '$18.50', time: '5 min ago' },
-      { id: '#GV-4010', asin: 'B0B9XQ1Z5P', buyer: 'Tom Harris', status: 'Tracking', profit: '$7.20', time: '22 min ago' },
-      { id: '#GV-4009', asin: 'B0CDQM3QBZ', buyer: 'Nina Patel', status: 'Processing', profit: '$11.80', time: '45 min ago' },
-      { id: '#GV-4008', asin: 'B0C1H2XFQN', buyer: 'Derek Jones', status: 'Fulfilled', profit: '$25.00', time: '1h ago' },
-      { id: '#GV-4007', asin: 'B0BXKR5ZJ3', buyer: 'Mia Torres', status: 'Pending', profit: '$9.60', time: '2h ago' },
-    ],
-    revenueChart: [
-      { name: 'Mon', profit: 1800, revenue: 3100 }, { name: 'Tue', profit: 2400, revenue: 3900 },
-      { name: 'Wed', profit: 2100, revenue: 3500 }, { name: 'Thu', profit: 3100, revenue: 5200 },
-      { name: 'Fri', profit: 2800, revenue: 4600 }, { name: 'Sat', profit: 3600, revenue: 5800 },
-      { name: 'Sun', profit: 3200, revenue: 5100 },
-    ],
-    activeListings: [
-      { name: 'Mon', value: 410 }, { name: 'Tue', value: 418 }, { name: 'Wed', value: 425 },
-      { name: 'Thu', value: 420 }, { name: 'Fri', value: 432 }, { name: 'Sat', value: 440 }, { name: 'Sun', value: 445 },
-    ],
-    totalSold: [
-      { name: 'Mon', value: 8 }, { name: 'Tue', value: 11 }, { name: 'Wed', value: 9 },
-      { name: 'Thu', value: 14 }, { name: 'Fri', value: 12 }, { name: 'Sat', value: 19 }, { name: 'Sun', value: 16 },
-    ],
-    listingsCount: 3218,
-    soldCount: 489,
-  },
+const emptySparkline = [
+  { name: 'Mon', value: 0 }, { name: 'Tue', value: 0 }, { name: 'Wed', value: 0 },
+  { name: 'Thu', value: 0 }, { name: 'Fri', value: 0 }, { name: 'Sat', value: 0 }, { name: 'Sun', value: 0 },
 ];
 
-const mockListings = [
-  { title: 'Wireless Bluetooth Earbuds', asin: 'B09V3KXJPB', ebayPrice: 34.99, amazonCost: 22.50, margin: 35.7, sales30d: 48, active: true },
-  { title: 'USB-C Hub Adapter 7-in-1', asin: 'B08N5WRWNW', ebayPrice: 29.99, amazonCost: 18.20, margin: 39.3, sales30d: 32, active: true },
-  { title: 'LED Desk Lamp Dimmable', asin: 'B07ZPKN6YR', ebayPrice: 42.99, amazonCost: 28.80, margin: 33.0, sales30d: 21, active: false },
-  { title: 'Portable Phone Charger 10000mAh', asin: 'B09B8DQ26F', ebayPrice: 24.99, amazonCost: 14.30, margin: 42.8, sales30d: 67, active: true },
-];
+const mockStores: StoreData[] = [];
+
+const mockListings: { title: string; asin: string; ebayPrice: number; amazonCost: number; margin: number; sales30d: number; active: boolean }[] = [];
 
 function StatusPill({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -215,7 +164,7 @@ function OverviewTab({ store }: { store: StoreData }) {
                   <p className="text-xs text-muted-foreground mt-0.5">Active Listings</p>
                 </div>
               </div>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5"><TrendingUp className="h-3 w-3" /> 13.35</span>
+              <span className="flex items-center text-xs font-semibold text-muted-foreground gap-0.5">—</span>
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
@@ -244,7 +193,7 @@ function OverviewTab({ store }: { store: StoreData }) {
                   <p className="text-xs text-muted-foreground mt-0.5">Total Sold</p>
                 </div>
               </div>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5"><TrendingUp className="h-3 w-3" /> 50.8%</span>
+              <span className="flex items-center text-xs font-semibold text-muted-foreground gap-0.5">—</span>
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
@@ -267,15 +216,15 @@ function OverviewTab({ store }: { store: StoreData }) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Avg. Order Value</span>
-                <span className="text-sm font-semibold">$14.28</span>
+                <span className="text-sm font-semibold">$0.00</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Fulfillment Credits</span>
-                <span className="text-sm font-semibold">$142.00</span>
+                <span className="text-sm font-semibold">$0.00</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Price Alerts</span>
-                <span className="text-sm font-semibold" style={{ color: 'hsl(var(--warning))' }}>3</span>
+                <span className="text-sm font-semibold">0</span>
               </div>
             </div>
           </div>
@@ -298,7 +247,9 @@ function OverviewTab({ store }: { store: StoreData }) {
               <th className="text-left p-3 font-medium">Time</th>
             </tr></thead>
             <tbody>
-              {store.orders.map(o => (
+              {store.orders.length === 0 ? (
+                <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No orders yet. Orders will appear here once your store starts selling.</td></tr>
+              ) : store.orders.map(o => (
                 <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
                   <td className="p-3 font-mono text-xs">{o.id}</td>
                   <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
@@ -353,18 +304,20 @@ function OrdersTab({ store }: { store: StoreData }) {
             <th className="text-left p-3 font-medium">Profit</th>
             <th className="text-left p-3 font-medium">Time</th>
           </tr></thead>
-          <tbody>
-            {filtered.map(o => (
-              <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
-                <td className="p-3 font-mono text-xs">{o.id}</td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
-                <td className="p-3">{o.buyer}</td>
-                <td className="p-3"><StatusPill status={o.status} /></td>
-                <td className="p-3 font-semibold text-success">{o.profit}</td>
-                <td className="p-3 text-muted-foreground">{o.time}</td>
-              </tr>
-            ))}
-          </tbody>
+           <tbody>
+             {filtered.length === 0 ? (
+               <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No orders found. Orders will appear here once your store starts selling.</td></tr>
+             ) : filtered.map(o => (
+               <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
+                 <td className="p-3 font-mono text-xs">{o.id}</td>
+                 <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
+                 <td className="p-3">{o.buyer}</td>
+                 <td className="p-3"><StatusPill status={o.status} /></td>
+                 <td className="p-3 font-semibold text-success">{o.profit}</td>
+                 <td className="p-3 text-muted-foreground">{o.time}</td>
+               </tr>
+             ))}
+           </tbody>
         </table>
       </div>
       <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
@@ -380,18 +333,15 @@ function OrdersTab({ store }: { store: StoreData }) {
 }
 
 // Per-store eBay subscription & limits data
-const storeSubscriptionData: Record<string, { plan: string; freeListings: number; listingsUsed: number; listingsTotal: number; itemsUsed: number; itemsTotal: number; amountUsed: number; amountTotal: number }> = {
-  'store-1': { plan: 'Premium', freeListings: 10000, listingsUsed: 1583, listingsTotal: 5000, itemsUsed: 3193, itemsTotal: 5500, amountUsed: 147677.22, amountTotal: 770000 },
-  'store-2': { plan: 'Starter', freeListings: 250, listingsUsed: 412, listingsTotal: 1000, itemsUsed: 890, itemsTotal: 2000, amountUsed: 34210.50, amountTotal: 150000 },
-};
+const storeSubscriptionData: Record<string, { plan: string; freeListings: number; listingsUsed: number; listingsTotal: number; itemsUsed: number; itemsTotal: number; amountUsed: number; amountTotal: number }> = {};
 
 function AutolisterTab({ store }: { store: StoreData }) {
   const [listingTab, setListingTab] = useState<'products' | 'leads' | 'autopilot'>('products');
   
   const [asinInput, setAsinInput] = useState('');
 
-  const sub = storeSubscriptionData[store.id] || storeSubscriptionData['store-1'];
-  const listingsRemaining = sub.listingsTotal - sub.listingsUsed;
+  const sub = storeSubscriptionData[store.id] || null;
+  const listingsRemaining = sub ? sub.listingsTotal - sub.listingsUsed : 0;
 
   const [leadsCount, setLeadsCount] = useState('');
   const [autopilotCounts, setAutopilotCounts] = useState<Record<string, string>>({ 'store-1': '300', 'store-2': '150' });
@@ -446,9 +396,13 @@ function AutolisterTab({ store }: { store: StoreData }) {
                 onChange={e => setAsinInput(e.target.value)}
                 className="rounded-lg h-11"
               />
-              <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
-              </p>
+              {sub ? (
+                <p className="text-sm text-muted-foreground">
+                  You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Connect a store to see your listing limits.</p>
+              )}
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">
                 List ASIN(s)
               </Button>
@@ -465,9 +419,13 @@ function AutolisterTab({ store }: { store: StoreData }) {
                 onChange={e => setLeadsCount(e.target.value)}
                 className="rounded-lg h-11"
               />
-              <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
-              </p>
+              {sub ? (
+                <p className="text-sm text-muted-foreground">
+                  You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Connect a store to see your listing limits.</p>
+              )}
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">
                 List
               </Button>
@@ -497,45 +455,47 @@ function AutolisterTab({ store }: { store: StoreData }) {
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
             <h3 className="font-semibold">eBay Store Subscription</h3>
-            <span className="text-muted-foreground">—</span>
-            <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">{sub.plan}</span>
-            <span className="text-sm text-muted-foreground">{sub.freeListings.toLocaleString()} free listings/mo</span>
+            {sub ? (
+              <>
+                <span className="text-muted-foreground">—</span>
+                <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">{sub.plan}</span>
+                <span className="text-sm text-muted-foreground">{sub.freeListings.toLocaleString()} free listings/mo</span>
+              </>
+            ) : null}
           </div>
 
-          <div>
-            <h4 className="font-semibold text-sm">Monthly Selling Limits</h4>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              You've used {sub.itemsUsed.toLocaleString()} of {sub.itemsTotal.toLocaleString()} items and ${sub.amountUsed.toLocaleString()} of ${sub.amountTotal.toLocaleString()} USD this month.
-            </p>
-          </div>
+          {sub ? (
+            <>
+              <div>
+                <h4 className="font-semibold text-sm">Monthly Selling Limits</h4>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  You've used {sub.itemsUsed.toLocaleString()} of {sub.itemsTotal.toLocaleString()} items and ${sub.amountUsed.toLocaleString()} of ${sub.amountTotal.toLocaleString()} USD this month.
+                </p>
+              </div>
 
-          {/* Items Progress */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Items</span>
-              <span className="text-muted-foreground">{sub.itemsUsed.toLocaleString()} / {sub.itemsTotal.toLocaleString()}</span>
-            </div>
-            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${(sub.itemsUsed / sub.itemsTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
-              />
-            </div>
-          </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Items</span>
+                  <span className="text-muted-foreground">{sub.itemsUsed.toLocaleString()} / {sub.itemsTotal.toLocaleString()}</span>
+                </div>
+                <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${(sub.itemsUsed / sub.itemsTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }} />
+                </div>
+              </div>
 
-          {/* Amount Progress */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Amount</span>
-              <span className="text-muted-foreground">${sub.amountUsed.toLocaleString()} / ${sub.amountTotal.toLocaleString()}</span>
-            </div>
-            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${(sub.amountUsed / sub.amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
-              />
-            </div>
-          </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Amount</span>
+                  <span className="text-muted-foreground">${sub.amountUsed.toLocaleString()} / ${sub.amountTotal.toLocaleString()}</span>
+                </div>
+                <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${(sub.amountUsed / sub.amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground py-4 text-center">Connect an eBay store to see your subscription details and selling limits.</p>
+          )}
         </div>
       </div>
     </div>
@@ -543,40 +503,17 @@ function AutolisterTab({ store }: { store: StoreData }) {
 }
 
 function StoresTab() {
-  const connectedStore = {
-    name: 'TechDeals247',
-    sellerId: 'techdeals247',
-    connected: 'Jan 15, 2026',
-    listings: 847,
-    orders: 1243,
-  };
-
   return (
     <div className="space-y-6">
       <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
-        <p className="text-sm"><span className="font-medium">Advanced Plan:</span> 2 stores allowed. 1 connected, 1 slot available.</p>
+        <p className="text-sm"><span className="font-medium">Advanced Plan:</span> 2 stores allowed. 0 connected, 2 slots available.</p>
       </div>
 
       <div className="space-y-4">
-        <div className="bg-card rounded-xl border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground font-bold text-sm">TD</div>
-              <div>
-                <p className="font-semibold">{connectedStore.name}</p>
-                <p className="text-xs text-muted-foreground">@{connectedStore.sellerId}</p>
-              </div>
-            </div>
-            <span className="flex items-center gap-1.5 text-xs text-success font-medium"><span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" /> Connected</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div><p className="text-xs text-muted-foreground">Connected</p><p className="text-sm font-medium">{connectedStore.connected}</p></div>
-            <div><p className="text-xs text-muted-foreground">Listings</p><p className="text-sm font-medium">{connectedStore.listings}</p></div>
-            <div><p className="text-xs text-muted-foreground">Orders</p><p className="text-sm font-medium">{connectedStore.orders}</p></div>
-          </div>
-          <Button variant="outline" size="sm" className="rounded-md gap-2 text-destructive hover:text-destructive"><Unlink className="h-3.5 w-3.5" /> Disconnect</Button>
+        <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">
+          <Lock className="h-4 w-4" />
+          <span className="text-sm">Available store slot</span>
         </div>
-
         <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">
           <Lock className="h-4 w-4" />
           <span className="text-sm">Available store slot</span>
@@ -590,11 +527,12 @@ function StoresTab() {
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [activeStoreId, setActiveStoreId] = useState(mockStores[0].id);
+  const [activeStoreId, setActiveStoreId] = useState(mockStores[0]?.id || '');
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const activeStore = mockStores.find(s => s.id === activeStoreId) || mockStores[0];
+  const defaultStore: StoreData = { id: '', name: 'No Store', initials: '--', orders: [], revenueChart: emptyChartData, activeListings: emptySparkline, totalSold: emptySparkline, listingsCount: 0, soldCount: 0 };
+  const activeStore = mockStores.find(s => s.id === activeStoreId) || mockStores[0] || defaultStore;
 
   const handleSignOut = async () => {
     await signOut();
@@ -676,10 +614,15 @@ function DashboardContent() {
                   ))}
                 </PopoverContent>
               </Popover>
-            ) : (
+            ) : mockStores.length === 1 ? (
               <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
                 {activeStore.name}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
+                <Store className="h-3 w-3" />
+                No store connected
               </div>
             )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md"><Bell className="h-4 w-4" /></Button>

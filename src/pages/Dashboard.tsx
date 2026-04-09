@@ -340,8 +340,8 @@ function AutolisterTab({ store }: { store: StoreData }) {
   
   const [asinInput, setAsinInput] = useState('');
 
-  const sub = storeSubscriptionData[store.id] || storeSubscriptionData['store-1'];
-  const listingsRemaining = sub.listingsTotal - sub.listingsUsed;
+  const sub = storeSubscriptionData[store.id] || null;
+  const listingsRemaining = sub ? sub.listingsTotal - sub.listingsUsed : 0;
 
   const [leadsCount, setLeadsCount] = useState('');
   const [autopilotCounts, setAutopilotCounts] = useState<Record<string, string>>({ 'store-1': '300', 'store-2': '150' });

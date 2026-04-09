@@ -231,7 +231,7 @@ function SettingsContent() {
         </div>
         <nav className="flex-1 px-3 space-y-1">
           {navItems.map(item => (
-            <Link key={item.tab} to={item.tab === 'settings' ? '/settings' : '/dashboard'}
+            <Link key={item.tab} to={item.tab === 'settings' ? '/settings' : `/dashboard?tab=${item.tab}`}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 item.tab === 'settings' ? 'bg-accent text-primary font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               }`}>

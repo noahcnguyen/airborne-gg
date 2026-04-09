@@ -105,8 +105,8 @@ function OverviewTab() {
       {/* Chart + Side Panels */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Revenue Chart */}
-        <div className="lg:col-span-2 bg-card rounded-xl border p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="lg:col-span-2 bg-card rounded-xl border p-5">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Revenue & Profits</h3>
             <Popover>
               <PopoverTrigger asChild>
@@ -124,7 +124,7 @@ function OverviewTab() {
               </PopoverContent>
             </Popover>
           </div>
-          <div className="h-72">
+          <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -481,28 +481,28 @@ function DashboardContent() {
   return (
     <div className="min-h-screen flex bg-surface-1">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar flex flex-col z-40">
+      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r flex flex-col z-40">
         <div className="p-5 flex items-center gap-2">
-          <Plane className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-bold text-lg text-sidebar-foreground">Airborne</span>
+          <Plane className="h-6 w-6 text-primary" />
+          <span className="font-bold text-lg text-foreground">Airborne</span>
         </div>
         <nav className="flex-1 px-3 space-y-1">
           {navItems.map(item => (
             <button key={item.tab} onClick={() => setActiveTab(item.tab)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                activeTab === item.tab ? 'bg-sidebar-accent text-sidebar-foreground font-medium' : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                activeTab === item.tab ? 'bg-accent text-primary font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               }`}>
               <item.icon className="h-4.5 w-4.5" />
               {item.label}
             </button>
           ))}
         </nav>
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4 border-t">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">{initials}</div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
-              <p className="text-xs text-sidebar-muted">Advanced Plan</p>
+              <p className="text-sm font-medium text-foreground truncate">{userName}</p>
+              <p className="text-xs text-muted-foreground">Advanced Plan</p>
             </div>
           </div>
         </div>

@@ -105,8 +105,8 @@ function OverviewTab() {
       {/* Chart + Side Panels */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Revenue Chart */}
-        <div className="lg:col-span-2 bg-card rounded-xl border p-5">
-          <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-2 bg-card rounded-xl border p-5 flex flex-col">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold">Revenue & Profits</h3>
             <Popover>
               <PopoverTrigger asChild>
@@ -124,7 +124,7 @@ function OverviewTab() {
               </PopoverContent>
             </Popover>
           </div>
-          <div className="h-56">
+          <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -148,13 +148,13 @@ function OverviewTab() {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex items-center gap-6 mt-4 text-sm">
+          <div className="flex items-center gap-6 mt-3 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-primary" />
               <span className="text-muted-foreground">Revenue</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-success" style={{ backgroundColor: 'hsl(var(--success))' }} />
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--success))' }} />
               <span className="text-muted-foreground">Profit</span>
             </div>
           </div>

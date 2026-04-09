@@ -18,9 +18,28 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { toast } from "sonner";
-import { useDashboardData, useStoreData } from "@/hooks/useDashboardData";
+import { useStoreData } from "@/hooks/useDashboardData";
 import { OverviewTab } from "@/components/dashboard/OverviewTab";
 import { StoresTab } from "@/components/dashboard/StoresTab";
+import { supabase } from "@/lib/supabase";
+
+interface Order {
+  ebay_order_id: string;
+  state: string;
+  tracking_carrier: string;
+  tracking_number: string;
+  payout_estimate_cents: number;
+  actual_amazon_total_cents: number;
+  actual_profit_cents: number;
+}
+
+interface Stats {
+  total_profit: number;
+  total_orders: number;
+  completed_orders: number;
+  pending_orders: number;
+  active_listings: number;
+}
 
 type Tab = "overview" | "orders" | "autolister" | "stores" | "settings";
 
@@ -32,16 +51,51 @@ const navItems: { icon: typeof LayoutDashboard; label: string; tab: Tab }[] = [
   { icon: Settings, label: "Settings", tab: "settings" },
 ];
 
-function OrdersTab() {
+function OrdersTab({ orders }: { orders: Order[] }) {
   return (
     <div className="bg-card rounded-xl border">
       <div className="p-5 border-b">
         <h3 className="font-semibold">Orders</h3>
       </div>
-      <div className="p-8 text-center text-muted-foreground">
-        <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-40" />
-        <p className="text-sm">No orders yet. Connect a store to start tracking orders.</p>
-      </div>
+      {orders.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-muted-foreground">
+                <th className="text-left p-4 font-medium">Order ID</th>
+                <th className="text-left p-4 font-medium">State</th>
+                <th className="text-left p-4 font-medium">Carrier</th>
+                <th className="text-left p-4 font-medium">Tracking</th>
+                <th className="text-left p-4 font-medium">Earnings</th>
+                <th className="text-left p-4 font-medium">Cost</th>
+                <th className="text-left p-4 font-medium">Profit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.ebay_order_id} className="border-b last:border-0">
+                  <td className="p-4 font-mono text-xs">{order.ebay_order_id}</td>
+                  <td className="p-4">
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-accent text-primary font-medium">
+                      {order.state}
+                    </span>
+                  </td>
+                  <td className="p-4">{order.tracking_carrier || "—"}</td>
+                  <td className="p-4 font-mono text-xs">{order.tracking_number || "—"}</td>
+                  <td className="p-4">${(order.payout_estimate_cents / 100).toFixed(2)}</td>
+                  <td className="p-4">${(order.actual_amazon_total_cents / 100).toFixed(2)}</td>
+                  <td className="p-4 font-semibold">${(order.actual_profit_cents / 100).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="p-8 text-center text-muted-foreground">
+          <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-40" />
+          <p className="text-sm">No orders yet. Connect a store to start tracking orders.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -142,8 +196,29 @@ function DashboardContent() {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { data: dashboardData, loading: dashboardLoading } = useDashboardData();
   const { storeData, loading: storeLoading } = useStoreData();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [stats, setStats] = useState<Stats>({ total_profit: 0, total_orders: 0, completed_orders: 0, pending_orders: 0, active_listings: 0 });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      try {
+        const res = await fetch(
+          'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data',
+          { headers: { Authorization: `Bearer ${session.access_token}` } }
+        );
+        const data = await res.json();
+        if (data.orders) setOrders(data.orders);
+        if (data.stats) setStats(data.stats);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      }
+    };
+    fetchData();
+  }, [user]);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab") as Tab | null;
@@ -175,6 +250,7 @@ function DashboardContent() {
 
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   const initials = userName.slice(0, 2).toUpperCase();
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
 
   const tabTitles: Record<Tab, string> = {
     overview: "Overview",
@@ -209,9 +285,13 @@ function DashboardContent() {
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">
-              {initials}
-            </div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" className="w-9 h-9 rounded-lg object-cover" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">
+                {initials}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{userName}</p>
               <p className="text-xs text-muted-foreground">Advanced Plan</p>
@@ -240,8 +320,8 @@ function DashboardContent() {
         </header>
 
         <main className="p-6">
-          {activeTab === "overview" && <OverviewTab dashboardData={dashboardData} loading={dashboardLoading} />}
-          {activeTab === "orders" && <OrdersTab />}
+          {activeTab === "overview" && <OverviewTab stats={stats} />}
+          {activeTab === "orders" && <OrdersTab orders={orders} />}
           {activeTab === "autolister" && <AutolisterTab />}
           {activeTab === "stores" && <StoresTab storeData={storeData} loading={storeLoading} />}
         </main>

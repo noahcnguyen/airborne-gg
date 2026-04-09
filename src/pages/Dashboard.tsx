@@ -606,10 +606,15 @@ function DashboardContent() {
                   ))}
                 </PopoverContent>
               </Popover>
-            ) : (
+            ) : mockStores.length === 1 ? (
               <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
                 {activeStore.name}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
+                <Store className="h-3 w-3" />
+                No store connected
               </div>
             )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md"><Bell className="h-4 w-4" /></Button>

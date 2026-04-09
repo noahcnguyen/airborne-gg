@@ -14,25 +14,24 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (session) navigate('/dashboard', { replace: true });
-  }, [session, navigate]);
+    if (!authLoading && session) navigate('/dashboard', { replace: true });
+  }, [authLoading, session, navigate]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) toast.error(error.message);
-    else navigate('/dashboard');
     setLoading(false);
   };
 
   const handleOAuth = async (provider: 'google' | 'discord') => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + '/dashboard' },
+      options: { redirectTo: window.location.origin + '/auth/callback' },
     });
     if (error) toast.error(error.message);
   };

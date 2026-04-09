@@ -379,21 +379,24 @@ function OrdersTab({ store }: { store: StoreData }) {
   );
 }
 
-function AutolisterTab() {
+// Per-store eBay subscription & limits data
+const storeSubscriptionData: Record<string, { plan: string; freeListings: number; listingsUsed: number; listingsTotal: number; itemsUsed: number; itemsTotal: number; amountUsed: number; amountTotal: number }> = {
+  'store-1': { plan: 'Premium', freeListings: 10000, listingsUsed: 1583, listingsTotal: 5000, itemsUsed: 3193, itemsTotal: 5500, amountUsed: 147677.22, amountTotal: 770000 },
+  'store-2': { plan: 'Starter', freeListings: 250, listingsUsed: 412, listingsTotal: 1000, itemsUsed: 890, itemsTotal: 2000, amountUsed: 34210.50, amountTotal: 150000 },
+};
+
+function AutolisterTab({ store }: { store: StoreData }) {
   const [listingTab, setListingTab] = useState<'products' | 'leads' | 'autopilot'>('products');
   
   const [asinInput, setAsinInput] = useState('');
 
-  const listingsUsed = 1583;
-  const listingsTotal = 5000;
-  const listingsRemaining = listingsTotal - listingsUsed;
-  const itemsUsed = 3193;
-  const itemsTotal = 5500;
-  const amountUsed = 147677.22;
-  const amountTotal = 770000;
+  const sub = storeSubscriptionData[store.id] || storeSubscriptionData['store-1'];
+  const listingsRemaining = sub.listingsTotal - sub.listingsUsed;
 
   const [leadsCount, setLeadsCount] = useState('');
-  const [autopilotCount, setAutopilotCount] = useState('300');
+  const [autopilotCounts, setAutopilotCounts] = useState<Record<string, string>>({ 'store-1': '300', 'store-2': '150' });
+  const autopilotCount = autopilotCounts[store.id] || '0';
+  const setAutopilotCount = (val: string) => setAutopilotCounts(prev => ({ ...prev, [store.id]: val }));
 
   const listingTabs = [
     { id: 'products' as const, label: 'List My Products' },

@@ -164,7 +164,7 @@ function OverviewTab({ store }: { store: StoreData }) {
                   <p className="text-xs text-muted-foreground mt-0.5">Active Listings</p>
                 </div>
               </div>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5"><TrendingUp className="h-3 w-3" /> 13.35</span>
+              <span className="flex items-center text-xs font-semibold text-muted-foreground gap-0.5">—</span>
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
@@ -193,7 +193,7 @@ function OverviewTab({ store }: { store: StoreData }) {
                   <p className="text-xs text-muted-foreground mt-0.5">Total Sold</p>
                 </div>
               </div>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5"><TrendingUp className="h-3 w-3" /> 50.8%</span>
+              <span className="flex items-center text-xs font-semibold text-muted-foreground gap-0.5">—</span>
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
@@ -216,15 +216,15 @@ function OverviewTab({ store }: { store: StoreData }) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Avg. Order Value</span>
-                <span className="text-sm font-semibold">$14.28</span>
+                <span className="text-sm font-semibold">$0.00</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Fulfillment Credits</span>
-                <span className="text-sm font-semibold">$142.00</span>
+                <span className="text-sm font-semibold">$0.00</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Price Alerts</span>
-                <span className="text-sm font-semibold" style={{ color: 'hsl(var(--warning))' }}>3</span>
+                <span className="text-sm font-semibold">0</span>
               </div>
             </div>
           </div>

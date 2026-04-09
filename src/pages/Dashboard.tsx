@@ -606,8 +606,9 @@ function DashboardContent() {
     return null;
   }
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userName = user?.user_metadata?.full_name?.split(' ')[0] || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = userName.slice(0, 2).toUpperCase();
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
 
   const tabTitles: Record<Tab, string> = {
     overview: 'Overview', orders: 'Orders', autolister: 'Autolister', stores: 'My Stores', settings: 'Settings',
@@ -634,7 +635,11 @@ function DashboardContent() {
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">{initials}</div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" className="w-9 h-9 rounded-lg object-cover" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">{initials}</div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{userName}</p>
               <p className="text-xs text-muted-foreground">Advanced Plan</p>

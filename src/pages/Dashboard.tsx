@@ -776,6 +776,7 @@ function AutolisterTab() {
 }
 
 function StoresTab() {
+  const { user } = useAuth();
   const connectedStore = {
     name: "TechDeals247",
     sellerId: "techdeals247",

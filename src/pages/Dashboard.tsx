@@ -381,7 +381,7 @@ function OrdersTab({ store }: { store: StoreData }) {
 
 function AutolisterTab() {
   const [listingTab, setListingTab] = useState<'products' | 'leads' | 'autopilot'>('products');
-  const [offersTab, setOffersTab] = useState<'received' | 'send'>('received');
+  
   const [asinInput, setAsinInput] = useState('');
 
   const listingsUsed = 1583;
@@ -532,36 +532,6 @@ function AutolisterTab() {
                 style={{ width: `${(amountUsed / amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
               />
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Offers */}
-      <div className="bg-card rounded-xl border">
-        <div className="p-5 border-b">
-          <h3 className="font-semibold">Offers</h3>
-        </div>
-        <div className="p-5 space-y-4">
-          <div className="flex gap-4 border-b">
-            <button
-              onClick={() => setOffersTab('received')}
-              className={`pb-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                offersTab === 'received' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Received Offers
-            </button>
-            <button
-              onClick={() => setOffersTab('send')}
-              className={`pb-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                offersTab === 'send' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Send Offers
-            </button>
-          </div>
-          <div className="py-8 text-center text-muted-foreground text-sm">
-            No active offers.
           </div>
         </div>
       </div>

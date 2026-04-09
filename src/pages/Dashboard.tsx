@@ -16,16 +16,7 @@ import {
   ChevronRight,
   Plus,
   Lock,
-  Unlink,
-  ToggleLeft,
-  ToggleRight,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
   Package,
-  Users,
-  CreditCard,
-  BarChart3,
   ShoppingBag,
   Info,
 } from "lucide-react";
@@ -33,9 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -50,225 +38,7 @@ const navItems: { icon: typeof LayoutDashboard; label: string; tab: Tab }[] = [
   { icon: Settings, label: "Settings", tab: "settings" },
 ];
 
-// Store data
-interface StoreData {
-  id: string;
-  name: string;
-  initials: string;
-  orders: typeof mockOrdersDefault;
-  revenueChart: { name: string; profit: number; revenue: number }[];
-  activeListings: { name: string; value: number }[];
-  totalSold: { name: string; value: number }[];
-  listingsCount: number;
-  soldCount: number;
-}
-
-const mockOrdersDefault = [
-  {
-    id: "#AB-7291",
-    asin: "B09V3KXJPB",
-    buyer: "Sarah Mitchell",
-    status: "Fulfilled",
-    profit: "$12.40",
-    time: "2 min ago",
-  },
-  { id: "#AB-7290", asin: "B08N5WRWNW", buyer: "James Kim", status: "Tracking", profit: "$8.90", time: "15 min ago" },
-  {
-    id: "#AB-7289",
-    asin: "B07ZPKN6YR",
-    buyer: "Lisa Rodriguez",
-    status: "Pending",
-    profit: "$15.20",
-    time: "32 min ago",
-  },
-  { id: "#AB-7288", asin: "B09B8DQ26F", buyer: "Mike Davis", status: "Processing", profit: "$6.70", time: "1h ago" },
-  { id: "#AB-7287", asin: "B0BSHF7WHW", buyer: "Emma Wilson", status: "Fulfilled", profit: "$22.10", time: "2h ago" },
-  { id: "#AB-7286", asin: "B0BN1HP798", buyer: "Chris Lee", status: "Fulfilled", profit: "$9.30", time: "3h ago" },
-];
-
-const mockStores: StoreData[] = [
-  {
-    id: "store-1",
-    name: "TechDeals247",
-    initials: "TD",
-    orders: mockOrdersDefault,
-    revenueChart: [
-      { name: "Mon", profit: 3200, revenue: 4800 },
-      { name: "Tue", profit: 4100, revenue: 6200 },
-      { name: "Wed", profit: 3800, revenue: 5400 },
-      { name: "Thu", profit: 5200, revenue: 7800 },
-      { name: "Fri", profit: 4600, revenue: 6900 },
-      { name: "Sat", profit: 6100, revenue: 8200 },
-      { name: "Sun", profit: 5400, revenue: 7100 },
-    ],
-    activeListings: [
-      { name: "Mon", value: 820 },
-      { name: "Tue", value: 835 },
-      { name: "Wed", value: 842 },
-      { name: "Thu", value: 838 },
-      { name: "Fri", value: 847 },
-      { name: "Sat", value: 855 },
-      { name: "Sun", value: 861 },
-    ],
-    totalSold: [
-      { name: "Mon", value: 12 },
-      { name: "Tue", value: 18 },
-      { name: "Wed", value: 15 },
-      { name: "Thu", value: 22 },
-      { name: "Fri", value: 19 },
-      { name: "Sat", value: 28 },
-      { name: "Sun", value: 24 },
-    ],
-    listingsCount: 6532,
-    soldCount: 961,
-  },
-  {
-    id: "store-2",
-    name: "GadgetVault",
-    initials: "GV",
-    orders: [
-      {
-        id: "#GV-4011",
-        asin: "B0CJ3HLZRL",
-        buyer: "Amy Chen",
-        status: "Fulfilled",
-        profit: "$18.50",
-        time: "5 min ago",
-      },
-      {
-        id: "#GV-4010",
-        asin: "B0B9XQ1Z5P",
-        buyer: "Tom Harris",
-        status: "Tracking",
-        profit: "$7.20",
-        time: "22 min ago",
-      },
-      {
-        id: "#GV-4009",
-        asin: "B0CDQM3QBZ",
-        buyer: "Nina Patel",
-        status: "Processing",
-        profit: "$11.80",
-        time: "45 min ago",
-      },
-      {
-        id: "#GV-4008",
-        asin: "B0C1H2XFQN",
-        buyer: "Derek Jones",
-        status: "Fulfilled",
-        profit: "$25.00",
-        time: "1h ago",
-      },
-      { id: "#GV-4007", asin: "B0BXKR5ZJ3", buyer: "Mia Torres", status: "Pending", profit: "$9.60", time: "2h ago" },
-    ],
-    revenueChart: [
-      { name: "Mon", profit: 1800, revenue: 3100 },
-      { name: "Tue", profit: 2400, revenue: 3900 },
-      { name: "Wed", profit: 2100, revenue: 3500 },
-      { name: "Thu", profit: 3100, revenue: 5200 },
-      { name: "Fri", profit: 2800, revenue: 4600 },
-      { name: "Sat", profit: 3600, revenue: 5800 },
-      { name: "Sun", profit: 3200, revenue: 5100 },
-    ],
-    activeListings: [
-      { name: "Mon", value: 410 },
-      { name: "Tue", value: 418 },
-      { name: "Wed", value: 425 },
-      { name: "Thu", value: 420 },
-      { name: "Fri", value: 432 },
-      { name: "Sat", value: 440 },
-      { name: "Sun", value: 445 },
-    ],
-    totalSold: [
-      { name: "Mon", value: 8 },
-      { name: "Tue", value: 11 },
-      { name: "Wed", value: 9 },
-      { name: "Thu", value: 14 },
-      { name: "Fri", value: 12 },
-      { name: "Sat", value: 19 },
-      { name: "Sun", value: 16 },
-    ],
-    listingsCount: 3218,
-    soldCount: 489,
-  },
-];
-
-const mockListings = [
-  {
-    title: "Wireless Bluetooth Earbuds",
-    asin: "B09V3KXJPB",
-    ebayPrice: 34.99,
-    amazonCost: 22.5,
-    margin: 35.7,
-    sales30d: 48,
-    active: true,
-  },
-  {
-    title: "USB-C Hub Adapter 7-in-1",
-    asin: "B08N5WRWNW",
-    ebayPrice: 29.99,
-    amazonCost: 18.2,
-    margin: 39.3,
-    sales30d: 32,
-    active: true,
-  },
-  {
-    title: "LED Desk Lamp Dimmable",
-    asin: "B07ZPKN6YR",
-    ebayPrice: 42.99,
-    amazonCost: 28.8,
-    margin: 33.0,
-    sales30d: 21,
-    active: false,
-  },
-  {
-    title: "Portable Phone Charger 10000mAh",
-    asin: "B09B8DQ26F",
-    ebayPrice: 24.99,
-    amazonCost: 14.3,
-    margin: 42.8,
-    sales30d: 67,
-    active: true,
-  },
-];
-
-function StatusPill({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    Fulfilled: "bg-emerald-100 text-emerald-700",
-    Tracking: "bg-blue-100 text-blue-700",
-    Pending: "bg-amber-100 text-amber-700",
-    Processing: "bg-violet-100 text-violet-700",
-  };
-  return (
-    <span
-      className={`text-xs px-2.5 py-1 rounded-full font-medium ${styles[status] || "bg-muted text-muted-foreground"}`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function OverviewTab({ store }: { store: StoreData }) {
-  const [chartPeriod, setChartPeriod] = useState("Last 4 weeks");
-  const periods = ["Last 7 days", "Last 4 weeks", "Last 90 days"];
-
-  const baseChart = store.revenueChart;
-  const chartDataSets: Record<string, { name: string; profit: number; revenue: number }[]> = {
-    "Last 4 weeks": baseChart,
-    "Last 7 days": baseChart.map((d) => ({
-      ...d,
-      profit: Math.round(d.profit * 0.3),
-      revenue: Math.round(d.revenue * 0.3),
-    })),
-    "Last 90 days": baseChart.map((d, i) => ({
-      ...d,
-      name: `W${i + 1}`,
-      profit: d.profit * 4,
-      revenue: d.revenue * 4,
-    })),
-  };
-  const chartData = chartDataSets[chartPeriod] || chartDataSets["Last 4 weeks"];
-
+function OverviewTab() {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
@@ -282,327 +52,88 @@ function OverviewTab({ store }: { store: StoreData }) {
         </div>
         <div className="relative z-10">
           <h1 className="text-2xl font-bold mb-1">Welcome to your Airborne dashboard!</h1>
-          <p className="text-sm text-primary-foreground/70 mt-1">Here's what's happening with your stores today.</p>
+          <p className="text-sm text-primary-foreground/70 mt-1">Connect a store to get started.</p>
         </div>
       </div>
 
-      {/* Chart + Side Panels */}
+      {/* Empty state cards */}
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Main Revenue Chart */}
-        <div className="lg:col-span-2 bg-card rounded-xl border p-5 flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Revenue & Profits</h3>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="rounded-full gap-2 h-9 px-4">
-                  {chartPeriod} <ChevronDown className="h-3.5 w-3.5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-44 p-1" align="end">
-                {periods.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setChartPeriod(p)}
-                    className={`w-full text-left px-3 py-1.5 text-sm rounded hover:bg-surface-1 ${chartPeriod === p ? "bg-surface-1 font-medium" : ""}`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  width={35}
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`}
-                />
-                <Tooltip
-                  formatter={(value: number, name: string) => [
-                    `$${value.toLocaleString()}`,
-                    name === "revenue" ? "Revenue" : "Profit",
-                  ]}
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: "1px solid hsl(var(--border))",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                    fontSize: 13,
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorRevenue)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="profit"
-                  stroke="hsl(var(--success))"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorProfit)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex items-center gap-6 mt-3 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary" />
-              <span className="text-muted-foreground">Revenue</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "hsl(var(--success))" }} />
-              <span className="text-muted-foreground">Profit</span>
-            </div>
-          </div>
+        <div className="lg:col-span-2 bg-card rounded-xl border p-8 flex flex-col items-center justify-center text-center min-h-[300px]">
+          <Package className="h-12 w-12 text-muted-foreground/40 mb-4" />
+          <h3 className="text-lg font-semibold mb-1">No store connected</h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            Connect your eBay store to see revenue charts, order data, and listing analytics here.
+          </p>
         </div>
 
-        {/* Side Panels */}
         <div className="space-y-4">
-          {/* Active Listings */}
-          <div className="bg-card rounded-xl border p-5 card-hover">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                  <Package className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold leading-none">{store.listingsCount.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Active Listings</p>
-                </div>
+          <div className="bg-card rounded-xl border p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <Package className="h-4 w-4 text-primary" />
               </div>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5">
-                <TrendingUp className="h-3 w-3" /> 13.35
-              </span>
-            </div>
-            <div className="h-16">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={store.activeListings}>
-                  <defs>
-                    <linearGradient id="colorListings" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorListings)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div>
+                <p className="text-2xl font-bold leading-none">0</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Active Listings</p>
+              </div>
             </div>
           </div>
 
-          {/* Total Sold */}
-          <div className="bg-card rounded-xl border p-5 card-hover">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                  <ShoppingBag className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold leading-none">{store.soldCount.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Total Sold</p>
-                </div>
+          <div className="bg-card rounded-xl border p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <ShoppingBag className="h-4 w-4 text-primary" />
               </div>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5">
-                <TrendingUp className="h-3 w-3" /> 50.8%
-              </span>
-            </div>
-            <div className="h-16">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={store.totalSold}>
-                  <defs>
-                    <linearGradient id="colorSold" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="hsl(var(--success))"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorSold)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div>
+                <p className="text-2xl font-bold leading-none">0</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Total Sold</p>
+              </div>
             </div>
           </div>
 
-          {/* Quick Stats */}
           <div className="bg-card rounded-xl border p-5">
             <h4 className="text-sm font-semibold mb-3">Quick Stats</h4>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Avg. Order Value</span>
-                <span className="text-sm font-semibold">$14.28</span>
+                <span className="text-sm font-semibold">—</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Fulfillment Credits</span>
-                <span className="text-sm font-semibold">$142.00</span>
+                <span className="text-sm font-semibold">—</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Price Alerts</span>
-                <span className="text-sm font-semibold" style={{ color: "hsl(var(--warning))" }}>
-                  3
-                </span>
+                <span className="text-sm font-semibold">—</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Recent Orders Table */}
+      {/* Empty orders table */}
       <div className="bg-card rounded-xl border">
         <div className="p-5 border-b">
           <h3 className="font-semibold">Recent Orders</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-muted-foreground">
-                <th className="text-left p-3 font-medium">Order ID</th>
-                <th className="text-left p-3 font-medium">ASIN</th>
-                <th className="text-left p-3 font-medium">Buyer</th>
-                <th className="text-left p-3 font-medium">Status</th>
-                <th className="text-left p-3 font-medium">Profit</th>
-                <th className="text-left p-3 font-medium">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {store.orders.map((o) => (
-                <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
-                  <td className="p-3 font-mono text-xs">{o.id}</td>
-                  <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
-                  <td className="p-3">{o.buyer}</td>
-                  <td className="p-3">
-                    <StatusPill status={o.status} />
-                  </td>
-                  <td className="p-3 font-semibold text-success">{o.profit}</td>
-                  <td className="p-3 text-muted-foreground">{o.time}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="p-8 text-center text-muted-foreground">
+          <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-40" />
+          <p className="text-sm">No orders yet. Orders will appear here once your store is connected.</p>
         </div>
       </div>
     </div>
   );
 }
 
-function OrdersTab({ store }: { store: StoreData }) {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const statuses = ["All", "Fulfilled", "Tracking", "Pending", "Processing"];
-  const filtered = store.orders.filter(
-    (o) =>
-      (statusFilter === "All" || o.status === statusFilter) &&
-      (o.id.toLowerCase().includes(search.toLowerCase()) || o.buyer.toLowerCase().includes(search.toLowerCase())),
-  );
-
+function OrdersTab() {
   return (
     <div className="bg-card rounded-xl border">
-      <div className="p-5 border-b flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search orders..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 rounded-md"
-          />
-        </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="rounded-md gap-2">
-              {statusFilter} <ChevronDown className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-40 p-1" align="end">
-            {statuses.map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className="w-full text-left px-3 py-1.5 text-sm rounded hover:bg-surface-1"
-              >
-                {s}
-              </button>
-            ))}
-          </PopoverContent>
-        </Popover>
+      <div className="p-5 border-b">
+        <h3 className="font-semibold">Orders</h3>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-muted-foreground">
-              <th className="text-left p-3 font-medium">Order ID</th>
-              <th className="text-left p-3 font-medium">ASIN</th>
-              <th className="text-left p-3 font-medium">Buyer</th>
-              <th className="text-left p-3 font-medium">Status</th>
-              <th className="text-left p-3 font-medium">Profit</th>
-              <th className="text-left p-3 font-medium">Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((o) => (
-              <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
-                <td className="p-3 font-mono text-xs">{o.id}</td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
-                <td className="p-3">{o.buyer}</td>
-                <td className="p-3">
-                  <StatusPill status={o.status} />
-                </td>
-                <td className="p-3 font-semibold text-success">{o.profit}</td>
-                <td className="p-3 text-muted-foreground">{o.time}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
-        <span>
-          Showing {filtered.length} of {store.orders.length} orders
-        </span>
-        <div className="flex gap-1">
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-primary text-primary-foreground">
-            1
-          </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+      <div className="p-8 text-center text-muted-foreground">
+        <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-40" />
+        <p className="text-sm">No orders yet. Connect a store to start tracking orders.</p>
       </div>
     </div>
   );
@@ -610,17 +141,7 @@ function OrdersTab({ store }: { store: StoreData }) {
 
 function AutolisterTab() {
   const [listingTab, setListingTab] = useState<"products" | "leads" | "autopilot">("products");
-
   const [asinInput, setAsinInput] = useState("");
-
-  const listingsUsed = 1583;
-  const listingsTotal = 5000;
-  const listingsRemaining = listingsTotal - listingsUsed;
-  const itemsUsed = 3193;
-  const itemsTotal = 5500;
-  const amountUsed = 147677.22;
-  const amountTotal = 770000;
-
   const [leadsCount, setLeadsCount] = useState("");
   const [autopilotCount, setAutopilotCount] = useState("300");
 
@@ -672,10 +193,6 @@ function AutolisterTab() {
                 onChange={(e) => setAsinInput(e.target.value)}
                 className="rounded-lg h-11"
               />
-              <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span>{" "}
-                listings left! ({listingsUsed.toLocaleString()} used of {listingsTotal.toLocaleString()})
-              </p>
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">List ASIN(s)</Button>
             </div>
           )}
@@ -690,10 +207,6 @@ function AutolisterTab() {
                 onChange={(e) => setLeadsCount(e.target.value)}
                 className="rounded-lg h-11"
               />
-              <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span>{" "}
-                listings left! ({listingsUsed.toLocaleString()} used of {listingsTotal.toLocaleString()})
-              </p>
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">List</Button>
             </div>
           )}
@@ -713,62 +226,6 @@ function AutolisterTab() {
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">Save preference</Button>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* eBay Store Subscription */}
-      <div className="bg-card rounded-xl border">
-        <div className="p-5 space-y-4">
-          <div className="flex items-center gap-3">
-            <h3 className="font-semibold">eBay Store Subscription</h3>
-            <span className="text-muted-foreground">—</span>
-            <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">Premium</span>
-            <span className="text-sm text-muted-foreground">10,000 free listings/mo</span>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-sm">Monthly Selling Limits</h4>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              You've used {itemsUsed.toLocaleString()} of {itemsTotal.toLocaleString()} items and $
-              {amountUsed.toLocaleString()} of ${amountTotal.toLocaleString()} USD this month.
-            </p>
-          </div>
-
-          {/* Items Progress */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium" style={{ color: "hsl(var(--success))" }}>
-                Items
-              </span>
-              <span className="text-muted-foreground">
-                {itemsUsed.toLocaleString()} / {itemsTotal.toLocaleString()}
-              </span>
-            </div>
-            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${(itemsUsed / itemsTotal) * 100}%`, backgroundColor: "hsl(var(--success))" }}
-              />
-            </div>
-          </div>
-
-          {/* Amount Progress */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium" style={{ color: "hsl(var(--success))" }}>
-                Amount
-              </span>
-              <span className="text-muted-foreground">
-                ${amountUsed.toLocaleString()} / ${amountTotal.toLocaleString()}
-              </span>
-            </div>
-            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${(amountUsed / amountTotal) * 100}%`, backgroundColor: "hsl(var(--success))" }}
-              />
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -828,7 +285,6 @@ function StoresTab() {
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [activeStoreId, setActiveStoreId] = useState(mockStores[0].id);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -841,8 +297,6 @@ function DashboardContent() {
       setSearchParams(searchParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-
-  const activeStore = mockStores.find((s) => s.id === activeStoreId) || mockStores[0];
 
   const handleSignOut = async () => {
     await signOut();
@@ -908,39 +362,9 @@ function DashboardContent() {
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b h-14 flex items-center justify-between px-6">
           <h1 className="text-lg font-semibold">{tabTitles[activeTab]}</h1>
           <div className="flex items-center gap-3">
-            {mockStores.length > 1 ? (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs hover:bg-surface-2 transition-colors cursor-pointer">
-                    <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
-                    {activeStore.name}
-                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-52 p-1" align="end">
-                  {mockStores.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => setActiveStoreId(s.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded hover:bg-surface-1 transition-colors ${activeStoreId === s.id ? "bg-surface-1 font-medium" : ""}`}
-                    >
-                      <div className="w-7 h-7 rounded-md gradient-primary-bg flex items-center justify-center text-primary-foreground text-[10px] font-bold">
-                        {s.initials}
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm">{s.name}</p>
-                      </div>
-                      {activeStoreId === s.id && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-success" />}
-                    </button>
-                  ))}
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
-                {activeStore.name}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
+              No store connected
+            </div>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md">
               <Bell className="h-4 w-4" />
             </Button>
@@ -954,8 +378,8 @@ function DashboardContent() {
         </header>
 
         <main className="p-6">
-          {activeTab === "overview" && <OverviewTab store={activeStore} />}
-          {activeTab === "orders" && <OrdersTab store={activeStore} />}
+          {activeTab === "overview" && <OverviewTab />}
+          {activeTab === "orders" && <OrdersTab />}
           {activeTab === "autolister" && <AutolisterTab />}
           {activeTab === "stores" && <StoresTab />}
         </main>

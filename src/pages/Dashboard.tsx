@@ -22,8 +22,20 @@ const navItems: { icon: typeof LayoutDashboard; label: string; tab: Tab }[] = [
   { icon: Settings, label: 'Settings', tab: 'settings' },
 ];
 
-// Mock data
-const mockOrders = [
+// Store data
+interface StoreData {
+  id: string;
+  name: string;
+  initials: string;
+  orders: typeof mockOrdersDefault;
+  revenueChart: { name: string; profit: number; revenue: number }[];
+  activeListings: { name: string; value: number }[];
+  totalSold: { name: string; value: number }[];
+  listingsCount: number;
+  soldCount: number;
+}
+
+const mockOrdersDefault = [
   { id: '#AB-7291', asin: 'B09V3KXJPB', buyer: 'Sarah Mitchell', status: 'Fulfilled', profit: '$12.40', time: '2 min ago' },
   { id: '#AB-7290', asin: 'B08N5WRWNW', buyer: 'James Kim', status: 'Tracking', profit: '$8.90', time: '15 min ago' },
   { id: '#AB-7289', asin: 'B07ZPKN6YR', buyer: 'Lisa Rodriguez', status: 'Pending', profit: '$15.20', time: '32 min ago' },
@@ -32,30 +44,57 @@ const mockOrders = [
   { id: '#AB-7286', asin: 'B0BN1HP798', buyer: 'Chris Lee', status: 'Fulfilled', profit: '$9.30', time: '3h ago' },
 ];
 
-const revenueChartData = [
-  { name: 'Mon', profit: 3200, revenue: 4800 },
-  { name: 'Tue', profit: 4100, revenue: 6200 },
-  { name: 'Wed', profit: 3800, revenue: 5400 },
-  { name: 'Thu', profit: 5200, revenue: 7800 },
-  { name: 'Fri', profit: 4600, revenue: 6900 },
-  { name: 'Sat', profit: 6100, revenue: 8200 },
-  { name: 'Sun', profit: 5400, revenue: 7100 },
-];
-
-const chartDataSets: Record<string, { name: string; profit: number; revenue: number }[]> = {
-  'Last 4 weeks': revenueChartData,
-  'Last 7 days': revenueChartData.map(d => ({ ...d, profit: d.profit * 0.3, revenue: d.revenue * 0.3 })),
-  'Last 90 days': revenueChartData.map(d => ({ ...d, name: `W${revenueChartData.indexOf(d) + 1}`, profit: d.profit * 4, revenue: d.revenue * 4 })),
-};
-
-const activeListingsData = [
-  { name: 'Mon', value: 820 }, { name: 'Tue', value: 835 }, { name: 'Wed', value: 842 },
-  { name: 'Thu', value: 838 }, { name: 'Fri', value: 847 }, { name: 'Sat', value: 855 }, { name: 'Sun', value: 861 },
-];
-
-const totalSoldData = [
-  { name: 'Mon', value: 12 }, { name: 'Tue', value: 18 }, { name: 'Wed', value: 15 },
-  { name: 'Thu', value: 22 }, { name: 'Fri', value: 19 }, { name: 'Sat', value: 28 }, { name: 'Sun', value: 24 },
+const mockStores: StoreData[] = [
+  {
+    id: 'store-1',
+    name: 'TechDeals247',
+    initials: 'TD',
+    orders: mockOrdersDefault,
+    revenueChart: [
+      { name: 'Mon', profit: 3200, revenue: 4800 }, { name: 'Tue', profit: 4100, revenue: 6200 },
+      { name: 'Wed', profit: 3800, revenue: 5400 }, { name: 'Thu', profit: 5200, revenue: 7800 },
+      { name: 'Fri', profit: 4600, revenue: 6900 }, { name: 'Sat', profit: 6100, revenue: 8200 },
+      { name: 'Sun', profit: 5400, revenue: 7100 },
+    ],
+    activeListings: [
+      { name: 'Mon', value: 820 }, { name: 'Tue', value: 835 }, { name: 'Wed', value: 842 },
+      { name: 'Thu', value: 838 }, { name: 'Fri', value: 847 }, { name: 'Sat', value: 855 }, { name: 'Sun', value: 861 },
+    ],
+    totalSold: [
+      { name: 'Mon', value: 12 }, { name: 'Tue', value: 18 }, { name: 'Wed', value: 15 },
+      { name: 'Thu', value: 22 }, { name: 'Fri', value: 19 }, { name: 'Sat', value: 28 }, { name: 'Sun', value: 24 },
+    ],
+    listingsCount: 6532,
+    soldCount: 961,
+  },
+  {
+    id: 'store-2',
+    name: 'GadgetVault',
+    initials: 'GV',
+    orders: [
+      { id: '#GV-4011', asin: 'B0CJ3HLZRL', buyer: 'Amy Chen', status: 'Fulfilled', profit: '$18.50', time: '5 min ago' },
+      { id: '#GV-4010', asin: 'B0B9XQ1Z5P', buyer: 'Tom Harris', status: 'Tracking', profit: '$7.20', time: '22 min ago' },
+      { id: '#GV-4009', asin: 'B0CDQM3QBZ', buyer: 'Nina Patel', status: 'Processing', profit: '$11.80', time: '45 min ago' },
+      { id: '#GV-4008', asin: 'B0C1H2XFQN', buyer: 'Derek Jones', status: 'Fulfilled', profit: '$25.00', time: '1h ago' },
+      { id: '#GV-4007', asin: 'B0BXKR5ZJ3', buyer: 'Mia Torres', status: 'Pending', profit: '$9.60', time: '2h ago' },
+    ],
+    revenueChart: [
+      { name: 'Mon', profit: 1800, revenue: 3100 }, { name: 'Tue', profit: 2400, revenue: 3900 },
+      { name: 'Wed', profit: 2100, revenue: 3500 }, { name: 'Thu', profit: 3100, revenue: 5200 },
+      { name: 'Fri', profit: 2800, revenue: 4600 }, { name: 'Sat', profit: 3600, revenue: 5800 },
+      { name: 'Sun', profit: 3200, revenue: 5100 },
+    ],
+    activeListings: [
+      { name: 'Mon', value: 410 }, { name: 'Tue', value: 418 }, { name: 'Wed', value: 425 },
+      { name: 'Thu', value: 420 }, { name: 'Fri', value: 432 }, { name: 'Sat', value: 440 }, { name: 'Sun', value: 445 },
+    ],
+    totalSold: [
+      { name: 'Mon', value: 8 }, { name: 'Tue', value: 11 }, { name: 'Wed', value: 9 },
+      { name: 'Thu', value: 14 }, { name: 'Fri', value: 12 }, { name: 'Sat', value: 19 }, { name: 'Sun', value: 16 },
+    ],
+    listingsCount: 3218,
+    soldCount: 489,
+  },
 ];
 
 const mockListings = [
@@ -75,14 +114,16 @@ function StatusPill({ status }: { status: string }) {
   return <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${styles[status] || 'bg-muted text-muted-foreground'}`}>{status}</span>;
 }
 
-function OverviewTab() {
+function OverviewTab({ store }: { store: StoreData }) {
   const [chartPeriod, setChartPeriod] = useState('Last 4 weeks');
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const periods = ['Last 7 days', 'Last 4 weeks', 'Last 90 days'];
-  const { user } = useAuth();
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
+  const baseChart = store.revenueChart;
+  const chartDataSets: Record<string, { name: string; profit: number; revenue: number }[]> = {
+    'Last 4 weeks': baseChart,
+    'Last 7 days': baseChart.map(d => ({ ...d, profit: Math.round(d.profit * 0.3), revenue: Math.round(d.revenue * 0.3) })),
+    'Last 90 days': baseChart.map((d, i) => ({ ...d, name: `W${i + 1}`, profit: d.profit * 4, revenue: d.revenue * 4 })),
+  };
   const chartData = chartDataSets[chartPeriod] || chartDataSets['Last 4 weeks'];
 
   return (
@@ -170,7 +211,7 @@ function OverviewTab() {
                   <Package className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold leading-none">6,532</p>
+                  <p className="text-2xl font-bold leading-none">{store.listingsCount.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Active Listings</p>
                 </div>
               </div>
@@ -178,7 +219,7 @@ function OverviewTab() {
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={activeListingsData}>
+                <AreaChart data={store.activeListings}>
                   <defs>
                     <linearGradient id="colorListings" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
@@ -199,7 +240,7 @@ function OverviewTab() {
                   <ShoppingBag className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold leading-none">961</p>
+                  <p className="text-2xl font-bold leading-none">{store.soldCount.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Total Sold</p>
                 </div>
               </div>
@@ -207,7 +248,7 @@ function OverviewTab() {
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={totalSoldData}>
+                <AreaChart data={store.totalSold}>
                   <defs>
                     <linearGradient id="colorSold" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.2}/>
@@ -257,7 +298,7 @@ function OverviewTab() {
               <th className="text-left p-3 font-medium">Time</th>
             </tr></thead>
             <tbody>
-              {mockOrders.map(o => (
+              {store.orders.map(o => (
                 <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
                   <td className="p-3 font-mono text-xs">{o.id}</td>
                   <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
@@ -275,11 +316,11 @@ function OverviewTab() {
   );
 }
 
-function OrdersTab() {
+function OrdersTab({ store }: { store: StoreData }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const statuses = ['All', 'Fulfilled', 'Tracking', 'Pending', 'Processing'];
-  const filtered = mockOrders.filter(o =>
+  const filtered = store.orders.filter(o =>
     (statusFilter === 'All' || o.status === statusFilter) &&
     (o.id.toLowerCase().includes(search.toLowerCase()) || o.buyer.toLowerCase().includes(search.toLowerCase()))
   );
@@ -327,7 +368,7 @@ function OrdersTab() {
         </table>
       </div>
       <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
-        <span>Showing {filtered.length} of {mockOrders.length} orders</span>
+        <span>Showing {filtered.length} of {store.orders.length} orders</span>
         <div className="flex gap-1">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md"><ChevronLeft className="h-4 w-4" /></Button>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-primary text-primary-foreground">1</Button>
@@ -458,8 +499,11 @@ function StoresTab() {
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [activeStoreId, setActiveStoreId] = useState(mockStores[0].id);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const activeStore = mockStores.find(s => s.id === activeStoreId) || mockStores[0];
 
   const handleSignOut = async () => {
     await signOut();
@@ -514,10 +558,34 @@ function DashboardContent() {
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b h-14 flex items-center justify-between px-6">
           <h1 className="text-lg font-semibold">{tabTitles[activeTab]}</h1>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
-              TechDeals247
-            </div>
+            {mockStores.length > 1 ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs hover:bg-surface-2 transition-colors cursor-pointer">
+                    <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
+                    {activeStore.name}
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-52 p-1" align="end">
+                  {mockStores.map(s => (
+                    <button key={s.id} onClick={() => setActiveStoreId(s.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded hover:bg-surface-1 transition-colors ${activeStoreId === s.id ? 'bg-surface-1 font-medium' : ''}`}>
+                      <div className="w-7 h-7 rounded-md gradient-primary-bg flex items-center justify-center text-primary-foreground text-[10px] font-bold">{s.initials}</div>
+                      <div className="text-left">
+                        <p className="text-sm">{s.name}</p>
+                      </div>
+                      {activeStoreId === s.id && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-success" />}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" />
+                {activeStore.name}
+              </div>
+            )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md"><Bell className="h-4 w-4" /></Button>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md"><RefreshCw className="h-4 w-4" /></Button>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md" onClick={handleSignOut}><LogOut className="h-4 w-4" /></Button>
@@ -525,8 +593,8 @@ function DashboardContent() {
         </header>
 
         <main className="p-6">
-          {activeTab === 'overview' && <OverviewTab />}
-          {activeTab === 'orders' && <OrdersTab />}
+          {activeTab === 'overview' && <OverviewTab store={activeStore} />}
+          {activeTab === 'orders' && <OrdersTab store={activeStore} />}
           {activeTab === 'autolister' && <AutolisterTab />}
           {activeTab === 'stores' && <StoresTab />}
         </main>

@@ -394,7 +394,7 @@ function AutolisterTab() {
 
   const listingTabs = [
     { id: 'products' as const, label: 'List My Products' },
-    { id: 'leads' as const, label: "Infinity's Leads" },
+    { id: 'leads' as const, label: "Airborne's Pool" },
     { id: 'autopilot' as const, label: 'Listing Autopilot' },
   ];
 

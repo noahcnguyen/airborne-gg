@@ -392,10 +392,13 @@ function AutolisterTab() {
   const amountUsed = 147677.22;
   const amountTotal = 770000;
 
+  const [leadsCount, setLeadsCount] = useState('');
+  const [autopilotCount, setAutopilotCount] = useState('300');
+
   const listingTabs = [
     { id: 'products' as const, label: 'List My Products' },
     { id: 'leads' as const, label: "Airborne's Pool" },
-    { id: 'autopilot' as const, label: 'Listing Autopilot' },
+    { id: 'autopilot' as const, label: 'Autopilot' },
   ];
 
   return (

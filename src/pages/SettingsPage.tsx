@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plane, LayoutDashboard, ShoppingCart, List, Store, Settings, LogOut, ChevronRight, Eye, EyeOff, Plus, X, Shield, Link2 } from 'lucide-react';
+import { Plane, LayoutDashboard, ShoppingCart, List, Store, Settings, LogOut, ChevronRight, Eye, EyeOff, Plus, X, Shield, Link2, CreditCard, ExternalLink, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -335,6 +335,65 @@ function SettingsContent() {
                   </span>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Subscription Management */}
+          <div className="bg-card rounded-xl border p-6">
+            <h2 className="font-semibold text-lg mb-5">Airborne Subscription</h2>
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 rounded-xl gradient-primary-bg flex items-center justify-center flex-shrink-0">
+                <CreditCard className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div className="flex-1 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-base">Advanced Plan</p>
+                    <p className="text-sm text-muted-foreground">$49.99/month</p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-success/15 text-success text-xs font-medium">Active</span>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="bg-surface-1 rounded-lg border p-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Current Period
+                    </div>
+                    <p className="text-sm font-medium">Apr 9 – May 9, 2026</p>
+                  </div>
+                  <div className="bg-surface-1 rounded-lg border p-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Next Renewal
+                    </div>
+                    <p className="text-sm font-medium">May 9, 2026</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-md gap-2"
+                    onClick={() => toast.info('Stripe billing portal will be connected soon.')}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Manage Billing
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-md gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => toast.info('Stripe cancellation flow will be connected soon.')}
+                  >
+                    Cancel Plan
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Billing is managed through Stripe. You'll be redirected to a secure portal to update payment methods or cancel.
+                </p>
+              </div>
             </div>
           </div>
 

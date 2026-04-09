@@ -329,10 +329,7 @@ function OrdersTab({ store }: { store: StoreData }) {
 }
 
 // Per-store eBay subscription & limits data
-const storeSubscriptionData: Record<string, { plan: string; freeListings: number; listingsUsed: number; listingsTotal: number; itemsUsed: number; itemsTotal: number; amountUsed: number; amountTotal: number }> = {
-  'store-1': { plan: 'Premium', freeListings: 10000, listingsUsed: 1583, listingsTotal: 5000, itemsUsed: 3193, itemsTotal: 5500, amountUsed: 147677.22, amountTotal: 770000 },
-  'store-2': { plan: 'Starter', freeListings: 250, listingsUsed: 412, listingsTotal: 1000, itemsUsed: 890, itemsTotal: 2000, amountUsed: 34210.50, amountTotal: 150000 },
-};
+const storeSubscriptionData: Record<string, { plan: string; freeListings: number; listingsUsed: number; listingsTotal: number; itemsUsed: number; itemsTotal: number; amountUsed: number; amountTotal: number }> = {};
 
 function AutolisterTab({ store }: { store: StoreData }) {
   const [listingTab, setListingTab] = useState<'products' | 'leads' | 'autopilot'>('products');

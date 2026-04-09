@@ -396,9 +396,13 @@ function AutolisterTab({ store }: { store: StoreData }) {
                 onChange={e => setAsinInput(e.target.value)}
                 className="rounded-lg h-11"
               />
-              <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
-              </p>
+              {sub ? (
+                <p className="text-sm text-muted-foreground">
+                  You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Connect a store to see your listing limits.</p>
+              )}
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">
                 List ASIN(s)
               </Button>
@@ -415,9 +419,13 @@ function AutolisterTab({ store }: { store: StoreData }) {
                 onChange={e => setLeadsCount(e.target.value)}
                 className="rounded-lg h-11"
               />
-              <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
-              </p>
+              {sub ? (
+                <p className="text-sm text-muted-foreground">
+                  You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Connect a store to see your listing limits.</p>
+              )}
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">
                 List
               </Button>

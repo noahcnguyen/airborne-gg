@@ -777,55 +777,19 @@ function AutolisterTab() {
 
 function StoresTab() {
   const { user } = useAuth();
-  const connectedStore = {
-    name: "TechDeals247",
-    sellerId: "techdeals247",
-    connected: "Jan 15, 2026",
-    listings: 847,
-    orders: 1243,
-  };
 
   return (
     <div className="space-y-6">
       <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
         <p className="text-sm">
-          <span className="font-medium">Advanced Plan:</span> 2 stores allowed. 1 connected, 1 slot available.
+          <span className="font-medium">Advanced Plan:</span> 2 stores allowed. 0 connected, 2 slots available.
         </p>
       </div>
 
       <div className="space-y-4">
-        <div className="bg-card rounded-xl border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground font-bold text-sm">
-                TD
-              </div>
-              <div>
-                <p className="font-semibold">{connectedStore.name}</p>
-                <p className="text-xs text-muted-foreground">@{connectedStore.sellerId}</p>
-              </div>
-            </div>
-            <span className="flex items-center gap-1.5 text-xs text-success font-medium">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" /> Connected
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div>
-              <p className="text-xs text-muted-foreground">Connected</p>
-              <p className="text-sm font-medium">{connectedStore.connected}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Listings</p>
-              <p className="text-sm font-medium">{connectedStore.listings}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Orders</p>
-              <p className="text-sm font-medium">{connectedStore.orders}</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" className="rounded-md gap-2 text-destructive hover:text-destructive">
-            <Unlink className="h-3.5 w-3.5" /> Disconnect
-          </Button>
+        <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">
+          <Lock className="h-4 w-4" />
+          <span className="text-sm">Available store slot</span>
         </div>
 
         <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">

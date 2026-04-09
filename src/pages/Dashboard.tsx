@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import {
   Plane,
   LayoutDashboard,
@@ -867,6 +868,16 @@ function DashboardContent() {
   const [activeStoreId, setActiveStoreId] = useState(mockStores[0].id);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("ebay") === "connected") {
+      toast.success("eBay store connected successfully!");
+      setActiveTab("stores");
+      searchParams.delete("ebay");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const activeStore = mockStores.find((s) => s.id === activeStoreId) || mockStores[0];
 

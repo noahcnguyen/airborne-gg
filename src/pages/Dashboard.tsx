@@ -137,12 +137,22 @@ function AutolisterTab() {
 }
 
 function DashboardContent() {
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as Tab) || "overview";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { data: dashboardData, loading: dashboardLoading } = useDashboardData();
   const { storeData, loading: storeLoading } = useStoreData();
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab") as Tab | null;
+    if (tabParam && tabParam !== activeTab && ["overview", "orders", "autolister", "stores", "settings"].includes(tabParam)) {
+      setActiveTab(tabParam);
+      searchParams.delete("tab");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (searchParams.get("ebay") === "connected") {

@@ -247,7 +247,9 @@ function OverviewTab({ store }: { store: StoreData }) {
               <th className="text-left p-3 font-medium">Time</th>
             </tr></thead>
             <tbody>
-              {store.orders.map(o => (
+              {store.orders.length === 0 ? (
+                <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No orders yet. Orders will appear here once your store starts selling.</td></tr>
+              ) : store.orders.map(o => (
                 <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
                   <td className="p-3 font-mono text-xs">{o.id}</td>
                   <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
@@ -302,18 +304,20 @@ function OrdersTab({ store }: { store: StoreData }) {
             <th className="text-left p-3 font-medium">Profit</th>
             <th className="text-left p-3 font-medium">Time</th>
           </tr></thead>
-          <tbody>
-            {filtered.map(o => (
-              <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
-                <td className="p-3 font-mono text-xs">{o.id}</td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
-                <td className="p-3">{o.buyer}</td>
-                <td className="p-3"><StatusPill status={o.status} /></td>
-                <td className="p-3 font-semibold text-success">{o.profit}</td>
-                <td className="p-3 text-muted-foreground">{o.time}</td>
-              </tr>
-            ))}
-          </tbody>
+           <tbody>
+             {filtered.length === 0 ? (
+               <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No orders found. Orders will appear here once your store starts selling.</td></tr>
+             ) : filtered.map(o => (
+               <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
+                 <td className="p-3 font-mono text-xs">{o.id}</td>
+                 <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
+                 <td className="p-3">{o.buyer}</td>
+                 <td className="p-3"><StatusPill status={o.status} /></td>
+                 <td className="p-3 font-semibold text-success">{o.profit}</td>
+                 <td className="p-3 text-muted-foreground">{o.time}</td>
+               </tr>
+             ))}
+           </tbody>
         </table>
       </div>
       <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
@@ -443,45 +447,47 @@ function AutolisterTab({ store }: { store: StoreData }) {
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
             <h3 className="font-semibold">eBay Store Subscription</h3>
-            <span className="text-muted-foreground">—</span>
-            <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">{sub.plan}</span>
-            <span className="text-sm text-muted-foreground">{sub.freeListings.toLocaleString()} free listings/mo</span>
+            {sub ? (
+              <>
+                <span className="text-muted-foreground">—</span>
+                <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">{sub.plan}</span>
+                <span className="text-sm text-muted-foreground">{sub.freeListings.toLocaleString()} free listings/mo</span>
+              </>
+            ) : null}
           </div>
 
-          <div>
-            <h4 className="font-semibold text-sm">Monthly Selling Limits</h4>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              You've used {sub.itemsUsed.toLocaleString()} of {sub.itemsTotal.toLocaleString()} items and ${sub.amountUsed.toLocaleString()} of ${sub.amountTotal.toLocaleString()} USD this month.
-            </p>
-          </div>
+          {sub ? (
+            <>
+              <div>
+                <h4 className="font-semibold text-sm">Monthly Selling Limits</h4>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  You've used {sub.itemsUsed.toLocaleString()} of {sub.itemsTotal.toLocaleString()} items and ${sub.amountUsed.toLocaleString()} of ${sub.amountTotal.toLocaleString()} USD this month.
+                </p>
+              </div>
 
-          {/* Items Progress */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Items</span>
-              <span className="text-muted-foreground">{sub.itemsUsed.toLocaleString()} / {sub.itemsTotal.toLocaleString()}</span>
-            </div>
-            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${(sub.itemsUsed / sub.itemsTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
-              />
-            </div>
-          </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Items</span>
+                  <span className="text-muted-foreground">{sub.itemsUsed.toLocaleString()} / {sub.itemsTotal.toLocaleString()}</span>
+                </div>
+                <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${(sub.itemsUsed / sub.itemsTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }} />
+                </div>
+              </div>
 
-          {/* Amount Progress */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Amount</span>
-              <span className="text-muted-foreground">${sub.amountUsed.toLocaleString()} / ${sub.amountTotal.toLocaleString()}</span>
-            </div>
-            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${(sub.amountUsed / sub.amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
-              />
-            </div>
-          </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Amount</span>
+                  <span className="text-muted-foreground">${sub.amountUsed.toLocaleString()} / ${sub.amountTotal.toLocaleString()}</span>
+                </div>
+                <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${(sub.amountUsed / sub.amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground py-4 text-center">Connect an eBay store to see your subscription details and selling limits.</p>
+          )}
         </div>
       </div>
     </div>
@@ -489,40 +495,17 @@ function AutolisterTab({ store }: { store: StoreData }) {
 }
 
 function StoresTab() {
-  const connectedStore = {
-    name: 'TechDeals247',
-    sellerId: 'techdeals247',
-    connected: 'Jan 15, 2026',
-    listings: 847,
-    orders: 1243,
-  };
-
   return (
     <div className="space-y-6">
       <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
-        <p className="text-sm"><span className="font-medium">Advanced Plan:</span> 2 stores allowed. 1 connected, 1 slot available.</p>
+        <p className="text-sm"><span className="font-medium">Advanced Plan:</span> 2 stores allowed. 0 connected, 2 slots available.</p>
       </div>
 
       <div className="space-y-4">
-        <div className="bg-card rounded-xl border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg gradient-primary-bg flex items-center justify-center text-primary-foreground font-bold text-sm">TD</div>
-              <div>
-                <p className="font-semibold">{connectedStore.name}</p>
-                <p className="text-xs text-muted-foreground">@{connectedStore.sellerId}</p>
-              </div>
-            </div>
-            <span className="flex items-center gap-1.5 text-xs text-success font-medium"><span className="w-2 h-2 rounded-full bg-success animate-pulse_dot" /> Connected</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div><p className="text-xs text-muted-foreground">Connected</p><p className="text-sm font-medium">{connectedStore.connected}</p></div>
-            <div><p className="text-xs text-muted-foreground">Listings</p><p className="text-sm font-medium">{connectedStore.listings}</p></div>
-            <div><p className="text-xs text-muted-foreground">Orders</p><p className="text-sm font-medium">{connectedStore.orders}</p></div>
-          </div>
-          <Button variant="outline" size="sm" className="rounded-md gap-2 text-destructive hover:text-destructive"><Unlink className="h-3.5 w-3.5" /> Disconnect</Button>
+        <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">
+          <Lock className="h-4 w-4" />
+          <span className="text-sm">Available store slot</span>
         </div>
-
         <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">
           <Lock className="h-4 w-4" />
           <span className="text-sm">Available store slot</span>

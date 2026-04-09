@@ -499,8 +499,11 @@ function StoresTab() {
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [activeStoreId, setActiveStoreId] = useState(mockStores[0].id);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const activeStore = mockStores.find(s => s.id === activeStoreId) || mockStores[0];
 
   const handleSignOut = async () => {
     await signOut();

@@ -396,6 +396,7 @@ function SettingsContent() {
                 </p>
               </div>
             </div>
+          </div>
 
           {/* Amazon accounts */}
           <div className="bg-card rounded-xl border p-6">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plane, LayoutDashboard, ShoppingCart, List, Store, Settings, LogOut, ChevronRight, Eye, EyeOff, Plus, X, Shield, Link2 } from 'lucide-react';
+import { Plane, LayoutDashboard, ShoppingCart, List, Store, Settings, LogOut, ChevronRight, Eye, EyeOff, Plus, X, Shield, Link2, CreditCard, ExternalLink, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

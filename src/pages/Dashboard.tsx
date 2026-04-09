@@ -380,70 +380,147 @@ function OrdersTab({ store }: { store: StoreData }) {
 }
 
 function AutolisterTab() {
-  const [subTab, setSubTab] = useState<'Active' | 'Paused' | 'Ended'>('Active');
-  const [search, setSearch] = useState('');
-  const listings = mockListings.filter(l => {
-    if (subTab === 'Active') return l.active;
-    if (subTab === 'Paused') return !l.active;
-    return false;
-  }).filter(l => l.title.toLowerCase().includes(search.toLowerCase()) || l.asin.toLowerCase().includes(search.toLowerCase()));
+  const [listingTab, setListingTab] = useState<'products' | 'leads' | 'autopilot'>('products');
+  const [offersTab, setOffersTab] = useState<'received' | 'send'>('received');
+  const [asinInput, setAsinInput] = useState('');
+
+  const listingsUsed = 1583;
+  const listingsTotal = 5000;
+  const listingsRemaining = listingsTotal - listingsUsed;
+  const itemsUsed = 3193;
+  const itemsTotal = 5500;
+  const amountUsed = 147677.22;
+  const amountTotal = 770000;
+
+  const listingTabs = [
+    { id: 'products' as const, label: 'List My Products' },
+    { id: 'leads' as const, label: "Infinity's Leads" },
+    { id: 'autopilot' as const, label: 'Listing Autopilot' },
+  ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex gap-1 bg-surface-1 rounded-lg p-1">
-          {(['Active', 'Paused', 'Ended'] as const).map(t => (
-            <button key={t} onClick={() => setSubTab(t)}
-              className={`px-4 py-1.5 text-sm rounded-md transition-colors ${subTab === t ? 'bg-card shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'}`}>
-              {t}
-            </button>
-          ))}
+    <div className="space-y-6">
+      {/* Listing Manager */}
+      <div className="bg-card rounded-xl border">
+        <div className="p-5 border-b">
+          <h3 className="font-semibold">Listing Manager</h3>
         </div>
-        <Button className="gradient-primary-bg text-primary-foreground rounded-md gap-2"><Plus className="h-4 w-4" /> Import from ASIN Pool</Button>
+        <div className="p-5 space-y-5">
+          {/* Tabs */}
+          <div className="flex items-center gap-2">
+            {listingTabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setListingTab(tab.id)}
+                className={`px-4 py-2 text-sm rounded-full transition-colors ${
+                  listingTab === tab.id
+                    ? 'gradient-primary-bg text-primary-foreground font-medium'
+                    : 'bg-surface-1 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ASIN Input */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Enter up to 50 ASINs (comma separated)</p>
+              <button className="flex items-center gap-1.5 text-sm text-primary hover:underline font-medium">
+                <Plus className="h-3.5 w-3.5" /> Upload CSV
+              </button>
+            </div>
+            <Input
+              placeholder="e.g. B012345678, B0ABCDEFGH1"
+              value={asinInput}
+              onChange={e => setAsinInput(e.target.value)}
+              className="rounded-lg h-11"
+            />
+            <p className="text-sm text-muted-foreground">
+              You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({listingsUsed.toLocaleString()} used of {listingsTotal.toLocaleString()})
+            </p>
+          </div>
+
+          <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">
+            List ASIN(s)
+          </Button>
+        </div>
       </div>
 
+      {/* eBay Store Subscription */}
       <div className="bg-card rounded-xl border">
-        <div className="p-4 border-b">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search listings..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 rounded-md" />
+        <div className="p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold">eBay Store Subscription</h3>
+            <span className="text-muted-foreground">—</span>
+            <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">Premium</span>
+            <span className="text-sm text-muted-foreground">10,000 free listings/mo</span>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-sm">Monthly Selling Limits</h4>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              You've used {itemsUsed.toLocaleString()} of {itemsTotal.toLocaleString()} items and ${amountUsed.toLocaleString()} of ${amountTotal.toLocaleString()} USD this month.
+            </p>
+          </div>
+
+          {/* Items Progress */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Items</span>
+              <span className="text-muted-foreground">{itemsUsed.toLocaleString()} / {itemsTotal.toLocaleString()}</span>
+            </div>
+            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${(itemsUsed / itemsTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
+              />
+            </div>
+          </div>
+
+          {/* Amount Progress */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Amount</span>
+              <span className="text-muted-foreground">${amountUsed.toLocaleString()} / ${amountTotal.toLocaleString()}</span>
+            </div>
+            <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${(amountUsed / amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
+              />
+            </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b text-muted-foreground">
-              <th className="text-left p-3 font-medium">Product</th>
-              <th className="text-left p-3 font-medium">eBay Price</th>
-              <th className="text-left p-3 font-medium">Amazon Cost</th>
-              <th className="text-left p-3 font-medium">Margin</th>
-              <th className="text-left p-3 font-medium">30d Sales</th>
-              <th className="text-left p-3 font-medium">Active</th>
-            </tr></thead>
-            <tbody>
-              {listings.map(l => (
-                <tr key={l.asin} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
-                  <td className="p-3">
-                    <p className="font-medium">{l.title}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{l.asin}</p>
-                  </td>
-                  <td className="p-3">${l.ebayPrice.toFixed(2)}</td>
-                  <td className="p-3 text-muted-foreground">${l.amazonCost.toFixed(2)}</td>
-                  <td className="p-3 font-medium text-success">{l.margin.toFixed(1)}%</td>
-                  <td className="p-3">{l.sales30d}</td>
-                  <td className="p-3">
-                    {l.active ? <ToggleRight className="h-5 w-5 text-success" /> : <ToggleLeft className="h-5 w-5 text-muted-foreground" />}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      </div>
+
+      {/* Offers */}
+      <div className="bg-card rounded-xl border">
+        <div className="p-5 border-b">
+          <h3 className="font-semibold">Offers</h3>
         </div>
-        <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
-          <span>{listings.length} listings</span>
-          <div className="flex gap-1">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md"><ChevronLeft className="h-4 w-4" /></Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-primary text-primary-foreground">1</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md"><ChevronRight className="h-4 w-4" /></Button>
+        <div className="p-5 space-y-4">
+          <div className="flex gap-4 border-b">
+            <button
+              onClick={() => setOffersTab('received')}
+              className={`pb-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                offersTab === 'received' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Received Offers
+            </button>
+            <button
+              onClick={() => setOffersTab('send')}
+              className={`pb-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                offersTab === 'send' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Send Offers
+            </button>
+          </div>
+          <div className="py-8 text-center text-muted-foreground text-sm">
+            No active offers.
           </div>
         </div>
       </div>

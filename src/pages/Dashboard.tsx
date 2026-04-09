@@ -381,7 +381,7 @@ function OrdersTab({ store }: { store: StoreData }) {
 
 function AutolisterTab() {
   const [listingTab, setListingTab] = useState<'products' | 'leads' | 'autopilot'>('products');
-  const [offersTab, setOffersTab] = useState<'received' | 'send'>('received');
+  
   const [asinInput, setAsinInput] = useState('');
 
   const listingsUsed = 1583;

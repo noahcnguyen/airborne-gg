@@ -519,11 +519,12 @@ function StoresTab() {
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [activeStoreId, setActiveStoreId] = useState(mockStores[0].id);
+  const [activeStoreId, setActiveStoreId] = useState(mockStores[0]?.id || '');
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const activeStore = mockStores.find(s => s.id === activeStoreId) || mockStores[0];
+  const defaultStore: StoreData = { id: '', name: 'No Store', initials: '--', orders: [], revenueChart: emptyChartData, activeListings: emptySparkline, totalSold: emptySparkline, listingsCount: 0, soldCount: 0 };
+  const activeStore = mockStores.find(s => s.id === activeStoreId) || mockStores[0] || defaultStore;
 
   const handleSignOut = async () => {
     await signOut();

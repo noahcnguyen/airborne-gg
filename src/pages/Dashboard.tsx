@@ -606,8 +606,9 @@ function DashboardContent() {
     return null;
   }
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userName = user?.user_metadata?.full_name?.split(' ')[0] || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = userName.slice(0, 2).toUpperCase();
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
 
   const tabTitles: Record<Tab, string> = {
     overview: 'Overview', orders: 'Orders', autolister: 'Autolister', stores: 'My Stores', settings: 'Settings',

@@ -98,72 +98,7 @@ function OverviewTab() {
         </div>
         <div className="relative z-10">
           <h1 className="text-2xl font-bold mb-1">Welcome to your Airborne dashboard!</h1>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
-            <div>
-              <p className="text-sm text-primary-foreground/80">Reports Overview</p>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="mt-2 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground rounded-full gap-2 h-9 px-4">
-                    {chartPeriod} <ChevronDown className="h-3.5 w-3.5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-44 p-1" align="start">
-                  {periods.map(p => (
-                    <button key={p} onClick={() => setChartPeriod(p)}
-                      className={`w-full text-left px-3 py-1.5 text-sm rounded hover:bg-surface-1 ${chartPeriod === p ? 'bg-surface-1 font-medium' : ''}`}>
-                      {p}
-                    </button>
-                  ))}
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-primary-foreground/60">View stats for:</p>
-              <p className="text-sm font-semibold mt-0.5">eBay</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-card rounded-xl border p-5 flex items-center justify-between card-hover">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-sm text-muted-foreground">New Sales (24 hours)</p>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5"><TrendingUp className="h-3 w-3" /> 24.8%</span>
-            </div>
-            <p className="text-3xl font-bold">113</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
-            <Users className="h-6 w-6 text-primary" />
-          </div>
-        </div>
-
-        <div className="bg-card rounded-xl border p-5 flex items-center justify-between card-hover">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-sm text-muted-foreground">Revenue</p>
-              <span className="flex items-center text-xs font-semibold text-success gap-0.5"><TrendingUp className="h-3 w-3" /> 50.8%</span>
-            </div>
-            <p className="text-3xl font-bold">$21,553.60</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
-            <DollarSign className="h-6 w-6 text-primary" />
-          </div>
-        </div>
-
-        <div className="bg-card rounded-xl border p-5 flex items-center justify-between card-hover">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-sm text-muted-foreground">Profit</p>
-              <span className="flex items-center text-xs font-semibold text-destructive gap-0.5"><TrendingDown className="h-3 w-3" /> 10.5%</span>
-            </div>
-            <p className="text-3xl font-bold">$6,800.52</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
-            <BarChart3 className="h-6 w-6 text-primary" />
-          </div>
+          <p className="text-sm text-primary-foreground/70 mt-1">Here's what's happening with your stores today.</p>
         </div>
       </div>
 
@@ -173,6 +108,21 @@ function OverviewTab() {
         <div className="lg:col-span-2 bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold">Revenue & Profits</h3>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-full gap-2 h-9 px-4">
+                  {chartPeriod} <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-44 p-1" align="end">
+                {periods.map(p => (
+                  <button key={p} onClick={() => setChartPeriod(p)}
+                    className={`w-full text-left px-3 py-1.5 text-sm rounded hover:bg-surface-1 ${chartPeriod === p ? 'bg-surface-1 font-medium' : ''}`}>
+                    {p}
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">

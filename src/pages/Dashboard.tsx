@@ -379,21 +379,24 @@ function OrdersTab({ store }: { store: StoreData }) {
   );
 }
 
-function AutolisterTab() {
+// Per-store eBay subscription & limits data
+const storeSubscriptionData: Record<string, { plan: string; freeListings: number; listingsUsed: number; listingsTotal: number; itemsUsed: number; itemsTotal: number; amountUsed: number; amountTotal: number }> = {
+  'store-1': { plan: 'Premium', freeListings: 10000, listingsUsed: 1583, listingsTotal: 5000, itemsUsed: 3193, itemsTotal: 5500, amountUsed: 147677.22, amountTotal: 770000 },
+  'store-2': { plan: 'Starter', freeListings: 250, listingsUsed: 412, listingsTotal: 1000, itemsUsed: 890, itemsTotal: 2000, amountUsed: 34210.50, amountTotal: 150000 },
+};
+
+function AutolisterTab({ store }: { store: StoreData }) {
   const [listingTab, setListingTab] = useState<'products' | 'leads' | 'autopilot'>('products');
   
   const [asinInput, setAsinInput] = useState('');
 
-  const listingsUsed = 1583;
-  const listingsTotal = 5000;
-  const listingsRemaining = listingsTotal - listingsUsed;
-  const itemsUsed = 3193;
-  const itemsTotal = 5500;
-  const amountUsed = 147677.22;
-  const amountTotal = 770000;
+  const sub = storeSubscriptionData[store.id] || storeSubscriptionData['store-1'];
+  const listingsRemaining = sub.listingsTotal - sub.listingsUsed;
 
   const [leadsCount, setLeadsCount] = useState('');
-  const [autopilotCount, setAutopilotCount] = useState('300');
+  const [autopilotCounts, setAutopilotCounts] = useState<Record<string, string>>({ 'store-1': '300', 'store-2': '150' });
+  const autopilotCount = autopilotCounts[store.id] || '0';
+  const setAutopilotCount = (val: string) => setAutopilotCounts(prev => ({ ...prev, [store.id]: val }));
 
   const listingTabs = [
     { id: 'products' as const, label: 'List My Products' },
@@ -444,7 +447,7 @@ function AutolisterTab() {
                 className="rounded-lg h-11"
               />
               <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({listingsUsed.toLocaleString()} used of {listingsTotal.toLocaleString()})
+                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
               </p>
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">
                 List ASIN(s)
@@ -463,7 +466,7 @@ function AutolisterTab() {
                 className="rounded-lg h-11"
               />
               <p className="text-sm text-muted-foreground">
-                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({listingsUsed.toLocaleString()} used of {listingsTotal.toLocaleString()})
+                You have <span className="font-medium text-foreground">{listingsRemaining.toLocaleString()}</span> listings left! ({sub.listingsUsed.toLocaleString()} used of {sub.listingsTotal.toLocaleString()})
               </p>
               <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">
                 List
@@ -495,14 +498,14 @@ function AutolisterTab() {
           <div className="flex items-center gap-3">
             <h3 className="font-semibold">eBay Store Subscription</h3>
             <span className="text-muted-foreground">—</span>
-            <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">Premium</span>
-            <span className="text-sm text-muted-foreground">10,000 free listings/mo</span>
+            <span className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">{sub.plan}</span>
+            <span className="text-sm text-muted-foreground">{sub.freeListings.toLocaleString()} free listings/mo</span>
           </div>
 
           <div>
             <h4 className="font-semibold text-sm">Monthly Selling Limits</h4>
             <p className="text-sm text-muted-foreground mt-0.5">
-              You've used {itemsUsed.toLocaleString()} of {itemsTotal.toLocaleString()} items and ${amountUsed.toLocaleString()} of ${amountTotal.toLocaleString()} USD this month.
+              You've used {sub.itemsUsed.toLocaleString()} of {sub.itemsTotal.toLocaleString()} items and ${sub.amountUsed.toLocaleString()} of ${sub.amountTotal.toLocaleString()} USD this month.
             </p>
           </div>
 
@@ -510,12 +513,12 @@ function AutolisterTab() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Items</span>
-              <span className="text-muted-foreground">{itemsUsed.toLocaleString()} / {itemsTotal.toLocaleString()}</span>
+              <span className="text-muted-foreground">{sub.itemsUsed.toLocaleString()} / {sub.itemsTotal.toLocaleString()}</span>
             </div>
             <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
-                style={{ width: `${(itemsUsed / itemsTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
+                style={{ width: `${(sub.itemsUsed / sub.itemsTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
               />
             </div>
           </div>
@@ -524,12 +527,12 @@ function AutolisterTab() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium" style={{ color: 'hsl(var(--success))' }}>Amount</span>
-              <span className="text-muted-foreground">${amountUsed.toLocaleString()} / ${amountTotal.toLocaleString()}</span>
+              <span className="text-muted-foreground">${sub.amountUsed.toLocaleString()} / ${sub.amountTotal.toLocaleString()}</span>
             </div>
             <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
-                style={{ width: `${(amountUsed / amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
+                style={{ width: `${(sub.amountUsed / sub.amountTotal) * 100}%`, backgroundColor: 'hsl(var(--success))' }}
               />
             </div>
           </div>
@@ -683,7 +686,7 @@ function DashboardContent() {
         <main className="p-6">
           {activeTab === 'overview' && <OverviewTab store={activeStore} />}
           {activeTab === 'orders' && <OrdersTab store={activeStore} />}
-          {activeTab === 'autolister' && <AutolisterTab />}
+          {activeTab === 'autolister' && <AutolisterTab store={activeStore} />}
           {activeTab === 'stores' && <StoresTab />}
         </main>
       </div>

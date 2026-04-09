@@ -336,7 +336,6 @@ function SettingsContent() {
                 </div>
               )}
             </div>
-            </div>
           </div>
 
           {/* Subscription Management */}

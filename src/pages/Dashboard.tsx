@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plane,
   LayoutDashboard,
@@ -10,23 +10,17 @@ import {
   Bell,
   RefreshCw,
   LogOut,
-  Search,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Plus,
-  Lock,
-  Package,
-  ShoppingBag,
   Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useDashboardData, useStoreData } from "@/hooks/useDashboardData";
+import { OverviewTab } from "@/components/dashboard/OverviewTab";
+import { StoresTab } from "@/components/dashboard/StoresTab";
 
 type Tab = "overview" | "orders" | "autolister" | "stores" | "settings";
 
@@ -37,93 +31,6 @@ const navItems: { icon: typeof LayoutDashboard; label: string; tab: Tab }[] = [
   { icon: Store, label: "My Stores", tab: "stores" },
   { icon: Settings, label: "Settings", tab: "settings" },
 ];
-
-function OverviewTab() {
-  return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="relative rounded-2xl overflow-hidden gradient-primary-bg p-6 pb-8 text-primary-foreground">
-        <div className="absolute inset-0 opacity-20">
-          <svg className="absolute right-0 bottom-0 w-80 h-80" viewBox="0 0 400 400" fill="none">
-            <circle cx="350" cy="350" r="200" fill="white" fillOpacity="0.1" />
-            <circle cx="280" cy="280" r="150" fill="white" fillOpacity="0.08" />
-            <circle cx="200" cy="200" r="100" fill="white" fillOpacity="0.05" />
-          </svg>
-        </div>
-        <div className="relative z-10">
-          <h1 className="text-2xl font-bold mb-1">Welcome to your Airborne dashboard!</h1>
-          <p className="text-sm text-primary-foreground/70 mt-1">Connect a store to get started.</p>
-        </div>
-      </div>
-
-      {/* Empty state cards */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-card rounded-xl border p-8 flex flex-col items-center justify-center text-center min-h-[300px]">
-          <Package className="h-12 w-12 text-muted-foreground/40 mb-4" />
-          <h3 className="text-lg font-semibold mb-1">No store connected</h3>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            Connect your eBay store to see revenue charts, order data, and listing analytics here.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <div className="bg-card rounded-xl border p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <Package className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold leading-none">0</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Active Listings</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-xl border p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <ShoppingBag className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold leading-none">0</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Total Sold</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-xl border p-5">
-            <h4 className="text-sm font-semibold mb-3">Quick Stats</h4>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Avg. Order Value</span>
-                <span className="text-sm font-semibold">—</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Fulfillment Credits</span>
-                <span className="text-sm font-semibold">—</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Price Alerts</span>
-                <span className="text-sm font-semibold">—</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Empty orders table */}
-      <div className="bg-card rounded-xl border">
-        <div className="p-5 border-b">
-          <h3 className="font-semibold">Recent Orders</h3>
-        </div>
-        <div className="p-8 text-center text-muted-foreground">
-          <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No orders yet. Orders will appear here once your store is connected.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function OrdersTab() {
   return (
@@ -153,13 +60,11 @@ function AutolisterTab() {
 
   return (
     <div className="space-y-6">
-      {/* Listing Manager */}
       <div className="bg-card rounded-xl border">
         <div className="p-5 border-b">
           <h3 className="font-semibold">Manage Listings</h3>
         </div>
         <div className="p-5 space-y-5">
-          {/* Tabs */}
           <div className="flex items-center gap-2">
             {listingTabs.map((tab) => (
               <React.Fragment key={tab.id}>
@@ -178,7 +83,6 @@ function AutolisterTab() {
             ))}
           </div>
 
-          {/* Tab Content */}
           {listingTab === "products" && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -232,62 +136,13 @@ function AutolisterTab() {
   );
 }
 
-function StoresTab() {
-  const { user } = useAuth();
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
-        <p className="text-sm">
-          <span className="font-medium">Advanced Plan:</span> 2 stores allowed. 0 connected, 2 slots available.
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">
-          <Lock className="h-4 w-4" />
-          <span className="text-sm">Available store slot</span>
-        </div>
-
-        <div className="bg-surface-1 rounded-xl border border-dashed p-5 flex items-center justify-center gap-3 text-muted-foreground">
-          <Lock className="h-4 w-4" />
-          <span className="text-sm">Available store slot</span>
-        </div>
-      </div>
-
-      <Button
-        className="gradient-primary-bg text-primary-foreground rounded-md gap-2"
-        onClick={() => {
-          const userId = user?.id;
-          const scopes = [
-            "https://api.ebay.com/oauth/api_scope/sell.fulfillment",
-            "https://api.ebay.com/oauth/api_scope/sell.finances",
-            "https://api.ebay.com/oauth/api_scope/sell.inventory",
-            "https://api.ebay.com/oauth/api_scope/sell.account",
-          ].join(" ");
-
-          const params = new URLSearchParams({
-            client_id: "NohNgyen-Airborne-PRD-36c1164ac-4eb558e5",
-            response_type: "code",
-            redirect_uri: "Noh_Ngyen-NohNgyen-Airbor-tohbcuscg",
-            scope: scopes,
-            state: userId || "",
-          });
-
-          window.location.href = `https://auth.ebay.com/oauth2/authorize?${params.toString()}`;
-        }}
-      >
-        <Plus className="h-4 w-4" /> Connect Store
-      </Button>
-    </div>
-  );
-}
-
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { data: dashboardData, loading: dashboardLoading } = useDashboardData();
+  const { storeData, loading: storeLoading } = useStoreData();
 
   useEffect(() => {
     if (searchParams.get("ebay") === "connected") {
@@ -321,7 +176,6 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen flex bg-surface-1">
-      {/* Sidebar */}
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r flex flex-col z-40">
         <div className="p-5 flex items-center gap-2">
           <Plane className="h-6 w-6 text-primary" />
@@ -356,14 +210,12 @@ function DashboardContent() {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 ml-64">
-        {/* Topbar */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b h-14 flex items-center justify-between px-6">
           <h1 className="text-lg font-semibold">{tabTitles[activeTab]}</h1>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
-              No store connected
+              {storeData ? storeData.ebay_username : "No store connected"}
             </div>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md">
               <Bell className="h-4 w-4" />
@@ -378,10 +230,10 @@ function DashboardContent() {
         </header>
 
         <main className="p-6">
-          {activeTab === "overview" && <OverviewTab />}
+          {activeTab === "overview" && <OverviewTab dashboardData={dashboardData} loading={dashboardLoading} />}
           {activeTab === "orders" && <OrdersTab />}
           {activeTab === "autolister" && <AutolisterTab />}
-          {activeTab === "stores" && <StoresTab />}
+          {activeTab === "stores" && <StoresTab storeData={storeData} loading={storeLoading} />}
         </main>
       </div>
     </div>

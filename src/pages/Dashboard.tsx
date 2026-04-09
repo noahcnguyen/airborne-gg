@@ -211,7 +211,7 @@ function OverviewTab({ store }: { store: StoreData }) {
                   <Package className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold leading-none">6,532</p>
+                  <p className="text-2xl font-bold leading-none">{store.listingsCount.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Active Listings</p>
                 </div>
               </div>
@@ -219,7 +219,7 @@ function OverviewTab({ store }: { store: StoreData }) {
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={activeListingsData}>
+                <AreaChart data={store.activeListings}>
                   <defs>
                     <linearGradient id="colorListings" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
@@ -240,7 +240,7 @@ function OverviewTab({ store }: { store: StoreData }) {
                   <ShoppingBag className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold leading-none">961</p>
+                  <p className="text-2xl font-bold leading-none">{store.soldCount.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Total Sold</p>
                 </div>
               </div>
@@ -248,7 +248,7 @@ function OverviewTab({ store }: { store: StoreData }) {
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={totalSoldData}>
+                <AreaChart data={store.totalSold}>
                   <defs>
                     <linearGradient id="colorSold" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.2}/>
@@ -298,7 +298,7 @@ function OverviewTab({ store }: { store: StoreData }) {
               <th className="text-left p-3 font-medium">Time</th>
             </tr></thead>
             <tbody>
-              {mockOrders.map(o => (
+              {store.orders.map(o => (
                 <tr key={o.id} className="border-b last:border-0 hover:bg-surface-1 transition-colors">
                   <td className="p-3 font-mono text-xs">{o.id}</td>
                   <td className="p-3 font-mono text-xs text-muted-foreground">{o.asin}</td>
@@ -316,11 +316,11 @@ function OverviewTab({ store }: { store: StoreData }) {
   );
 }
 
-function OrdersTab() {
+function OrdersTab({ store }: { store: StoreData }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const statuses = ['All', 'Fulfilled', 'Tracking', 'Pending', 'Processing'];
-  const filtered = mockOrders.filter(o =>
+  const filtered = store.orders.filter(o =>
     (statusFilter === 'All' || o.status === statusFilter) &&
     (o.id.toLowerCase().includes(search.toLowerCase()) || o.buyer.toLowerCase().includes(search.toLowerCase()))
   );
@@ -368,7 +368,7 @@ function OrdersTab() {
         </table>
       </div>
       <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
-        <span>Showing {filtered.length} of {mockOrders.length} orders</span>
+        <span>Showing {filtered.length} of {store.orders.length} orders</span>
         <div className="flex gap-1">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md"><ChevronLeft className="h-4 w-4" /></Button>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-primary text-primary-foreground">1</Button>

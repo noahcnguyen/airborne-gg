@@ -502,7 +502,13 @@ function AutolisterTab({ store }: { store: StoreData }) {
   );
 }
 
+const EBAY_OAUTH_URL = 'https://auth.ebay.com/oauth2/authorize?client_id=NohNgyen-Airborne-PRD-36c1164ac-4eb558e5&response_type=code&redirect_uri=Noh_Ngyen-NohNgyen-Airbor-tohbcuscg&scope=' + encodeURIComponent('https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/sell.reputation https://api.ebay.com/oauth/api_scope/sell.reputation.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly https://api.ebay.com/oauth/api_scope/sell.stores https://api.ebay.com/oauth/api_scope/sell.stores.readonly https://api.ebay.com/oauth/scope/sell.edelivery https://api.ebay.com/oauth/api_scope/commerce.vero https://api.ebay.com/oauth/api_scope/sell.inventory.mapping https://api.ebay.com/oauth/api_scope/commerce.message https://api.ebay.com/oauth/api_scope/commerce.feedback https://api.ebay.com/oauth/api_scope/commerce.shipping');
+
 function StoresTab() {
+  const handleConnectStore = () => {
+    window.open(EBAY_OAUTH_URL, '_blank');
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
@@ -520,7 +526,7 @@ function StoresTab() {
         </div>
       </div>
 
-      <Button className="gradient-primary-bg text-primary-foreground rounded-md gap-2"><Plus className="h-4 w-4" /> Connect Store</Button>
+      <Button onClick={handleConnectStore} className="gradient-primary-bg text-primary-foreground rounded-md gap-2"><Plus className="h-4 w-4" /> Connect Store</Button>
     </div>
   );
 }

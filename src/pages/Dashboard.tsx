@@ -51,12 +51,7 @@ const emptySparkline = [
 
 const mockStores: StoreData[] = [];
 
-const mockListings = [
-  { title: 'Wireless Bluetooth Earbuds', asin: 'B09V3KXJPB', ebayPrice: 34.99, amazonCost: 22.50, margin: 35.7, sales30d: 48, active: true },
-  { title: 'USB-C Hub Adapter 7-in-1', asin: 'B08N5WRWNW', ebayPrice: 29.99, amazonCost: 18.20, margin: 39.3, sales30d: 32, active: true },
-  { title: 'LED Desk Lamp Dimmable', asin: 'B07ZPKN6YR', ebayPrice: 42.99, amazonCost: 28.80, margin: 33.0, sales30d: 21, active: false },
-  { title: 'Portable Phone Charger 10000mAh', asin: 'B09B8DQ26F', ebayPrice: 24.99, amazonCost: 14.30, margin: 42.8, sales30d: 67, active: true },
-];
+const mockListings: { title: string; asin: string; ebayPrice: number; amazonCost: number; margin: number; sales30d: number; active: boolean }[] = [];
 
 function StatusPill({ status }: { status: string }) {
   const styles: Record<string, string> = {

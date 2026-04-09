@@ -114,14 +114,16 @@ function StatusPill({ status }: { status: string }) {
   return <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${styles[status] || 'bg-muted text-muted-foreground'}`}>{status}</span>;
 }
 
-function OverviewTab() {
+function OverviewTab({ store }: { store: StoreData }) {
   const [chartPeriod, setChartPeriod] = useState('Last 4 weeks');
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const periods = ['Last 7 days', 'Last 4 weeks', 'Last 90 days'];
-  const { user } = useAuth();
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
+  const baseChart = store.revenueChart;
+  const chartDataSets: Record<string, { name: string; profit: number; revenue: number }[]> = {
+    'Last 4 weeks': baseChart,
+    'Last 7 days': baseChart.map(d => ({ ...d, profit: Math.round(d.profit * 0.3), revenue: Math.round(d.revenue * 0.3) })),
+    'Last 90 days': baseChart.map((d, i) => ({ ...d, name: `W${i + 1}`, profit: d.profit * 4, revenue: d.revenue * 4 })),
+  };
   const chartData = chartDataSets[chartPeriod] || chartDataSets['Last 4 weeks'];
 
   return (

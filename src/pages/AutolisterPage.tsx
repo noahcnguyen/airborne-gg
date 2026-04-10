@@ -6,10 +6,20 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface StoreOption {
   id: string;
   ebay_username: string;
+}
+
+interface StoreInfo {
+  subscription: string;
+  free_listings: number;
+  items_limit: number;
+  items_used: number;
+  amount_limit: number;
+  amount_used: number;
 }
 
 function AutolisterContent() {
@@ -20,6 +30,8 @@ function AutolisterContent() {
   const [asinInput, setAsinInput] = useState("");
   const [leadsCount, setLeadsCount] = useState("");
   const [autopilotCount, setAutopilotCount] = useState("300");
+  const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
+  const [storeInfoLoading, setStoreInfoLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -39,6 +51,28 @@ function AutolisterContent() {
     };
     fetchStores();
   }, [user]);
+
+  useEffect(() => {
+    if (!selectedStoreId) return;
+    const fetchStoreInfo = async () => {
+      setStoreInfoLoading(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(
+          `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/ebay-store-info?store_id=${selectedStoreId}`,
+          { headers: { Authorization: `Bearer ${session?.access_token}` } }
+        );
+        const data = await res.json();
+        if (data && !data.error) setStoreInfo(data);
+        else setStoreInfo(null);
+      } catch {
+        setStoreInfo(null);
+      } finally {
+        setStoreInfoLoading(false);
+      }
+    };
+    fetchStoreInfo();
+  }, [selectedStoreId]);
 
   const listingTabs = [
     { id: "products" as const, label: "List My Products" },

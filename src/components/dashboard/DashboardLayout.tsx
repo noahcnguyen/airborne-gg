@@ -57,7 +57,11 @@ export function DashboardLayout({ children, title, stores, selectedStoreId, onSt
 
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   const initials = userName.slice(0, 2).toUpperCase();
-  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
+  const rawAvatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
+  // Convert Discord animated avatars (hash starts with a_) to .gif
+  const avatarUrl = rawAvatarUrl?.includes("cdn.discordapp.com") && rawAvatarUrl.match(/\/a_[a-f0-9]+\./)
+    ? rawAvatarUrl.replace(/\.(png|webp|jpg)(\?|$)/, ".gif$2")
+    : rawAvatarUrl;
 
   return (
     <div className="min-h-screen flex bg-surface-1">

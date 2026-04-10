@@ -28,6 +28,7 @@ interface OverviewOrder {
   actual_profit_cents: number;
   created_at?: string;
   amazon_url?: string;
+  asin?: string;
 }
 
 type ChartRange = "today" | "7d" | "14d" | "30d" | "90d";
@@ -334,9 +335,8 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
                               ? "bg-orange-100 text-orange-600"
                               : "bg-orange-100 text-orange-600";
 
-                  // Extract ASIN from amazon_url
-                  const asinMatch = order.amazon_url?.match(/\/dp\/([A-Z0-9]+)/);
-                  const asin = asinMatch ? asinMatch[1] : "—";
+                  // Get ASIN from direct field or parse from amazon_url
+                  const asin = order.asin || order.amazon_url?.match(/\/dp\/([A-Z0-9]+)/)?.[1] || null;
 
                   // Time ago
                   const timeAgo = order.created_at
@@ -346,7 +346,20 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
                   return (
                     <tr key={order.ebay_order_id} className="border-b last:border-0">
                       <td className="p-4 font-mono text-xs text-primary">{order.ebay_order_id}</td>
-                      <td className="p-4 font-mono text-xs text-muted-foreground">{asin}</td>
+                      <td className="p-4 font-mono text-xs">
+                        {asin ? (
+                          <a
+                            href={`https://www.amazon.com/dp/${asin}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            {asin}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="p-4">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
                           {statusLabel}

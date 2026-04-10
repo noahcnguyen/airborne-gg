@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ShoppingCart, Package } from "lucide-react";
 import {
   Area,

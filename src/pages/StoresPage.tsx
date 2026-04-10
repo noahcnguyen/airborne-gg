@@ -8,7 +8,7 @@ function StoresContent() {
 
   return (
     <DashboardLayout title="My Stores">
-      <StoresTab stores={stores} loading={loading} />
+      <StoresTab stores={stores} loading={loading} onStoresChanged={refetchStores} />
     </DashboardLayout>
   );
 }

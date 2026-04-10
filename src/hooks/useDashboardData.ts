@@ -96,6 +96,24 @@ export function useStoreData() {
     fetchStores();
   }, [user]);
 
+  const refetchStores = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from("ebay_stores")
+        .select("id, ebay_username, connected_at, access_token_expires_at, is_active")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .order("connected_at", { ascending: true });
+      setStores(data || []);
+    } catch (error) {
+      console.error("Failed to fetch store data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Backwards compat: expose first store as storeData
-  return { stores, storeData: stores[0] || null, loading };
+  return { stores, storeData: stores[0] || null, loading, refetchStores };
 }

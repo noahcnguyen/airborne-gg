@@ -47,7 +47,7 @@ export function StoresTab({ stores, loading }: StoresTabProps) {
 
       <div className="space-y-4">
         {stores.map((store, i) => (
-          <div key={store.ebay_username + i} className="bg-card rounded-xl border p-5">
+          <div key={store.id || store.ebay_username + i} className="bg-card rounded-xl border p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">

@@ -1,6 +1,14 @@
+import { useEffect, useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useDashboardOrders } from "@/hooks/useDashboardOrders";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+
+interface StoreOption {
+  id: string;
+  ebay_username: string;
+}
 
 function getTrackingUrl(carrier: string, trackingNumber: string): string | null {
   if (!trackingNumber) return null;
@@ -13,10 +21,37 @@ function getTrackingUrl(carrier: string, trackingNumber: string): string | null 
 }
 
 function OrdersContent() {
-  const { orders } = useDashboardOrders();
+  const { user } = useAuth();
+  const [stores, setStores] = useState<StoreOption[]>([]);
+  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+  const { orders } = useDashboardOrders(selectedStoreId || undefined);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchStores = async () => {
+      const { data } = await supabase
+        .from("ebay_stores")
+        .select("id, ebay_username, connected_at, is_active")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .order("connected_at", { ascending: true });
+      if (data) {
+        setStores(data);
+        if (data.length > 0 && !selectedStoreId) {
+          setSelectedStoreId(data[0].id);
+        }
+      }
+    };
+    fetchStores();
+  }, [user]);
 
   return (
-    <DashboardLayout title="Orders">
+    <DashboardLayout
+      title="Orders"
+      stores={stores}
+      selectedStoreId={selectedStoreId}
+      onStoreChange={setSelectedStoreId}
+    >
       <div className="bg-card rounded-xl border">
         <div className="p-5 border-b">
           <h3 className="font-semibold">Orders</h3>

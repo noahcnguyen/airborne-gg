@@ -12,11 +12,13 @@ interface Order {
   actual_profit_cents: number;
 }
 
-export function useDashboardOrders() {
+export function useDashboardOrders(storeId?: string) {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
+    if (!user) return;
+
     const fetchOrders = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -24,15 +26,15 @@ export function useDashboardOrders() {
 
         let fetched = false;
         try {
-          const res = await fetch(
-            'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data',
-            {
-              headers: {
-                'Authorization': `Bearer ${session.access_token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
+          const url = storeId
+            ? `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data?store_id=${storeId}`
+            : 'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data';
+          const res = await fetch(url, {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
           if (res.ok) {
             const data = await res.json();
             if (data.orders) {
@@ -43,11 +45,15 @@ export function useDashboardOrders() {
         } catch {}
 
         if (!fetched) {
-          const { data } = await supabase
+          let query = supabase
             .from('orders')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(50);
+          if (storeId) {
+            query = query.eq('store_id', storeId);
+          }
+          const { data } = await query;
           if (data) setOrders(data);
         }
       } catch (err) {
@@ -58,7 +64,7 @@ export function useDashboardOrders() {
     fetchOrders();
     const interval = setInterval(fetchOrders, 60000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, storeId]);
 
   return { orders };
 }

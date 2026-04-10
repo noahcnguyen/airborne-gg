@@ -89,7 +89,7 @@ async function enrichOrdersWithAmazonData(orders: Order[], userId: string) {
 
 function DashboardContent() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats>({ total_profit: 0, total_orders: 0, completed_orders: 0, pending_orders: 0, active_listings: 0 });
   const [profitChart, setProfitChart] = useState<ProfitChartPoint[]>([]);
@@ -129,12 +129,12 @@ function DashboardContent() {
 
   // Fetch dashboard data when selectedStoreId changes
   useEffect(() => {
-    if (!user || !selectedStoreId) return;
+    if (!user || !selectedStoreId || !session?.access_token) return;
 
     const fetchData = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error || !session) return;
+        const accessToken = session.access_token;
+        const userId = session.user.id;
 
         let edgeFunctionWorked = false;
         try {
@@ -142,7 +142,7 @@ function DashboardContent() {
             `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data?store_id=${selectedStoreId}`,
             {
               headers: {
-                Authorization: `Bearer ${session.access_token}`,
+                Authorization: `Bearer ${accessToken}`,
                 "Content-Type": "application/json",
               },
             }
@@ -150,7 +150,7 @@ function DashboardContent() {
           if (res.ok) {
             const data = await res.json();
             if (data.orders) {
-              const enrichedOrders = await enrichOrdersWithAmazonData(data.orders, session.user.id);
+              const enrichedOrders = await enrichOrdersWithAmazonData(data.orders, userId);
               setOrders(enrichedOrders);
               setStats(buildStats(enrichedOrders, data.stats?.active_listings || 0));
             } else if (data.stats) {
@@ -168,7 +168,7 @@ function DashboardContent() {
           const { data: ordersData } = await supabase
             .from("orders")
             .select("*")
-            .eq("store_id", selectedStoreId)
+            .eq("ebay_store_id", selectedStoreId)
             .order("created_at", { ascending: false })
             .limit(50);
           if (ordersData && ordersData.length > 0) {
@@ -184,7 +184,7 @@ function DashboardContent() {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, [user, selectedStoreId]);
+  }, [user, selectedStoreId, session?.access_token]);
 
   return (
     <DashboardLayout

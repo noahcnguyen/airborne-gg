@@ -284,9 +284,8 @@ function DashboardContent() {
           );
           if (listingRes.ok) {
             const listingData = await listingRes.json();
-            if (listingData.total > 0) {
-              setStats(prev => ({ ...prev, active_listings: listingData.total }));
-            }
+            const activeListings = Number(listingData.count ?? listingData.total ?? 0);
+            setStats(prev => ({ ...prev, active_listings: activeListings }));
           }
         } catch (e) {
           console.error('eBay listings fetch failed:', e);

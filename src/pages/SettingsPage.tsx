@@ -213,6 +213,7 @@ function AmazonAccountModal({ onSave, editId, saving }: { onSave: (form: AmazonF
 
 function SettingsContent() {
   const { user, signOut } = useAuth();
+  const { planLabel } = useUserPlan();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState(user?.user_metadata?.full_name?.split(' ')[0] || '');
   const [lastName, setLastName] = useState(user?.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');

@@ -2,6 +2,7 @@ import { Lock, Plus, Store, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { StoreData } from "@/hooks/useDashboardData";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
@@ -24,6 +25,7 @@ interface StoresTabProps {
 
 export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) {
   const { user } = useAuth();
+  const { planLabel } = useUserPlan();
 
   const maxSlots = 2;
   const connectedCount = stores.length;
@@ -69,7 +71,7 @@ export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) 
     <div className="space-y-6">
       <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
         <p className="text-sm">
-          <span className="font-medium">Advanced Plan:</span> {maxSlots} stores allowed. {connectedCount} connected, {availableSlots} slots available.
+          <span className="font-medium">{planLabel}:</span> {maxSlots} stores allowed. {connectedCount} connected, {availableSlots} slots available.
         </p>
       </div>
 

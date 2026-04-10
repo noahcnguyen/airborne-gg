@@ -67,49 +67,36 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-function buildChartData(orders: OverviewOrder[], range: ChartRange, profitChart?: ProfitChartPoint[]) {
+function buildChartData(orders: OverviewOrder[], range: ChartRange) {
   const days = getRangeDays(range);
   const now = new Date();
   const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-  // Filter orders by date range
   const filtered = orders.filter((o) => {
     if (!o.created_at) return true;
     return new Date(o.created_at) >= cutoff;
   });
 
-  // Use profitChart from API if available, filtered by range
-  if (profitChart && profitChart.length > 0) {
-    const filteredChart = profitChart.filter((p) => new Date(p.date) >= cutoff);
-    if (filteredChart.length > 0) {
-      return filteredChart.map((p) => ({
-        day: new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        Revenue: 0,
-        Profit: p.profit / 100,
-      }));
-    }
+  const chartByDay: Record<string, { date: string; revenue: number; profit: number; cost: number }> = {};
+  filtered.forEach((order) => {
+    const day = order.created_at ? order.created_at.split("T")[0] : "unknown";
+    if (!chartByDay[day]) chartByDay[day] = { date: day, revenue: 0, profit: 0, cost: 0 };
+    chartByDay[day].revenue += (order.payout_estimate_cents || 0) / 100;
+    chartByDay[day].profit += (order.actual_profit_cents || 0) / 100;
+    chartByDay[day].cost += (order.actual_amazon_total_cents || 0) / 100;
+  });
+
+  const sorted = Object.values(chartByDay).sort((a, b) => a.date.localeCompare(b.date));
+
+  if (sorted.length === 0) {
+    return [{ day: "No data", Revenue: 0, Profit: 0, Cost: 0 }];
   }
 
-  // Fallback: group filtered orders by day
-  const dayMap = new Map<string, { revenue: number; profit: number }>();
-  for (const o of filtered) {
-    const dateKey = o.created_at
-      ? new Date(o.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-      : "Unknown";
-    const existing = dayMap.get(dateKey) || { revenue: 0, profit: 0 };
-    existing.revenue += o.payout_estimate_cents / 100;
-    existing.profit += o.actual_profit_cents / 100;
-    dayMap.set(dateKey, existing);
-  }
-
-  if (dayMap.size === 0) {
-    return [{ day: "No data", Revenue: 0, Profit: 0 }];
-  }
-
-  return Array.from(dayMap.entries()).map(([day, vals]) => ({
-    day,
-    Revenue: vals.revenue,
-    Profit: vals.profit,
+  return sorted.map((d) => ({
+    day: new Date(d.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    Revenue: d.revenue,
+    Profit: d.profit,
+    Cost: d.cost,
   }));
 }
 

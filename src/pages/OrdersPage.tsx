@@ -35,10 +35,12 @@ function OrdersContent() {
                     <td className="py-3 px-4 font-mono text-xs">{order.ebay_order_id}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        order.state === 'completed' ? 'bg-green-100 text-green-700' :
-                        order.state === 'submitted_to_zinc' ? 'bg-blue-100 text-blue-700' :
-                        order.state === 'zinc_failed' ? 'bg-red-100 text-red-700' :
-                        'bg-gray-100 text-gray-700'
+                        order.state === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+                        order.state === 'submitted_to_zinc' ? 'bg-purple-100 text-purple-600' :
+                        order.state === 'zinc_failed' ? 'bg-red-100 text-red-600' :
+                        order.state === 'tracking_pending_manual_carrier' ? 'bg-blue-100 text-blue-600' :
+                        order.state === 'awaiting_tba_conversion' ? 'bg-orange-100 text-orange-600' :
+                        'bg-orange-100 text-orange-600'
                       }`}>
                         {order.state}
                       </span>

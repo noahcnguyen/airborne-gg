@@ -262,7 +262,7 @@ function DashboardContent() {
               ['completed', 'submitted_to_zinc', 'awaiting_tba_conversion', 'tracking_pending_manual_carrier'].includes(o.state)
             );
             setStats({
-              total_profit: completed.reduce((sum: number, o: any) => sum + (o.actual_profit_cents / 100), 0),
+              total_profit: sold.reduce((sum: number, o: any) => sum + (o.actual_profit_cents / 100), 0),
               total_orders: ordersData.length,
               completed_orders: sold.length,
               pending_orders: ordersData.filter((o: any) => o.state === 'submitted_to_zinc').length,

@@ -89,7 +89,7 @@ async function enrichOrdersWithAmazonData(orders: Order[], userId: string) {
 
 function DashboardContent() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats>({ total_profit: 0, total_orders: 0, completed_orders: 0, pending_orders: 0, active_listings: 0 });
   const [profitChart, setProfitChart] = useState<ProfitChartPoint[]>([]);

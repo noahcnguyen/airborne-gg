@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { OverviewTab } from "@/components/dashboard/OverviewTab";
+import { useStores } from "@/hooks/useStores";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
@@ -28,18 +30,6 @@ interface Stats {
   active_listings: number;
 }
 
-interface ProfitChartPoint {
-  date: string;
-  profit: number;
-}
-
-interface StoreOption {
-  id: string;
-  ebay_username: string;
-  connected_at: string;
-  is_active: boolean;
-}
-
 const SOLD_ORDER_STATES = [
   "completed",
   "submitted_to_zinc",
@@ -49,7 +39,6 @@ const SOLD_ORDER_STATES = [
 
 function buildStats(orders: Order[], activeListings: number): Stats {
   const sold = orders.filter((order) => SOLD_ORDER_STATES.includes(order.state));
-
   return {
     total_profit: sold.reduce((sum, order) => sum + order.actual_profit_cents / 100, 0),
     total_orders: orders.length,
@@ -63,11 +52,8 @@ async function enrichOrdersWithAmazonData(orders: Order[], userId: string) {
   if (orders.length === 0 || orders.every((order) => order.asin || order.amazon_url)) {
     return orders;
   }
-
   const orderIds = orders.map((order) => order.ebay_order_id).filter(Boolean);
-  if (orderIds.length === 0) {
-    return orders;
-  }
+  if (orderIds.length === 0) return orders;
 
   const { data, error } = await supabase
     .from("orders")
@@ -75,49 +61,58 @@ async function enrichOrdersWithAmazonData(orders: Order[], userId: string) {
     .eq("user_id", userId)
     .in("ebay_order_id", orderIds);
 
-  if (error || !data?.length) {
-    return orders;
+  if (error || !data?.length) return orders;
+  const orderDataMap = new Map(data.map((order) => [order.ebay_order_id, order]));
+  return orders.map((order) => ({ ...order, ...orderDataMap.get(order.ebay_order_id) }));
+}
+
+async function fetchDashboardData(selectedStoreId: string, accessToken: string, userId: string) {
+  // Try edge function first
+  try {
+    const res = await fetch(
+      `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data?store_id=${selectedStoreId}`,
+      { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.orders) {
+        const enrichedOrders = await enrichOrdersWithAmazonData(data.orders, userId);
+        return {
+          orders: enrichedOrders,
+          stats: buildStats(enrichedOrders, data.stats?.active_listings || 0),
+          profitChart: data.profitChart || [],
+        };
+      }
+      return { orders: [], stats: buildStats([], data.stats?.active_listings || 0), profitChart: data.profitChart || [] };
+    }
+  } catch (err) {
+    console.error("Edge function failed:", err);
   }
 
-  const orderDataMap = new Map(data.map((order) => [order.ebay_order_id, order]));
+  // Fallback to direct query
+  const { data: ordersData } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("ebay_store_id", selectedStoreId)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-  return orders.map((order) => ({
-    ...order,
-    ...orderDataMap.get(order.ebay_order_id),
-  }));
+  const orders = ordersData || [];
+  return { orders, stats: buildStats(orders, 0), profitChart: [] };
 }
 
 function DashboardContent() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, session } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [stats, setStats] = useState<Stats>({ total_profit: 0, total_orders: 0, completed_orders: 0, pending_orders: 0, active_listings: 0 });
-  const [profitChart, setProfitChart] = useState<ProfitChartPoint[]>([]);
-  const [stores, setStores] = useState<StoreOption[]>([]);
+  const { session } = useAuth();
+  const { data: stores = [] } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
 
-  // Fetch connected stores on mount
+  // Auto-select first store
   useEffect(() => {
-    if (!user) return;
-
-    const fetchStores = async () => {
-      const { data: storesData } = await supabase
-        .from("ebay_stores")
-        .select("id, ebay_username, connected_at, is_active")
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .order("connected_at", { ascending: true });
-
-      if (storesData) {
-        setStores(storesData);
-        if (storesData.length > 0 && !selectedStoreId) {
-          setSelectedStoreId(storesData[0].id);
-        }
-      }
-    };
-
-    fetchStores();
-  }, [user]);
+    if (stores.length > 0 && !selectedStoreId) {
+      setSelectedStoreId(stores[0].id);
+    }
+  }, [stores, selectedStoreId]);
 
   useEffect(() => {
     if (searchParams.get("ebay") === "connected") {
@@ -127,64 +122,19 @@ function DashboardContent() {
     }
   }, [searchParams, setSearchParams]);
 
-  // Fetch dashboard data when selectedStoreId changes
-  useEffect(() => {
-    if (!user || !selectedStoreId || !session?.access_token) return;
+  const { data: dashboardData, isLoading } = useQuery({
+    queryKey: ["dashboard", selectedStoreId],
+    queryFn: () => fetchDashboardData(selectedStoreId, session!.access_token, session!.user.id),
+    enabled: !!selectedStoreId && !!session?.access_token,
+    staleTime: 60000,
+    gcTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchInterval: 60000,
+  });
 
-    const fetchData = async () => {
-      try {
-        const accessToken = session.access_token;
-        const userId = session.user.id;
-
-        let edgeFunctionWorked = false;
-        try {
-          const res = await fetch(
-            `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data?store_id=${selectedStoreId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (data.orders) {
-              const enrichedOrders = await enrichOrdersWithAmazonData(data.orders, userId);
-              setOrders(enrichedOrders);
-              setStats(buildStats(enrichedOrders, data.stats?.active_listings || 0));
-            } else if (data.stats) {
-              setStats(data.stats);
-            }
-            if (data.profitChart) setProfitChart(data.profitChart);
-            if (data.stores) setStores(data.stores);
-            edgeFunctionWorked = true;
-          }
-        } catch (err) {
-          console.error("Edge function failed:", err);
-        }
-
-        if (!edgeFunctionWorked) {
-          const { data: ordersData } = await supabase
-            .from("orders")
-            .select("*")
-            .eq("ebay_store_id", selectedStoreId)
-            .order("created_at", { ascending: false })
-            .limit(50);
-          if (ordersData && ordersData.length > 0) {
-            setOrders(ordersData);
-            setStats(buildStats(ordersData, 0));
-          }
-        }
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      }
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
-  }, [user, selectedStoreId, session?.access_token]);
+  const orders = dashboardData?.orders || [];
+  const stats = dashboardData?.stats || { total_profit: 0, total_orders: 0, completed_orders: 0, pending_orders: 0, active_listings: 0 };
+  const profitChart = dashboardData?.profitChart || [];
 
   return (
     <DashboardLayout

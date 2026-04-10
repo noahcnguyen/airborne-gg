@@ -238,8 +238,23 @@ function DashboardContent() {
           if (res.ok) {
             const data = await res.json();
             console.log('Dashboard data:', data);
-            if (data.orders) setOrders(data.orders);
-            if (data.stats) setStats(data.stats);
+            if (data.orders) {
+              setOrders(data.orders);
+              // Recalculate stats from orders to include all sold states
+              const allOrders = data.orders;
+              const sold = allOrders.filter((o: any) =>
+                ['completed', 'submitted_to_zinc', 'awaiting_tba_conversion', 'tracking_pending_manual_carrier'].includes(o.state)
+              );
+              setStats({
+                total_profit: sold.reduce((sum: number, o: any) => sum + (o.actual_profit_cents / 100), 0),
+                total_orders: allOrders.length,
+                completed_orders: sold.length,
+                pending_orders: allOrders.filter((o: any) => o.state === 'submitted_to_zinc').length,
+                active_listings: data.stats?.active_listings || 0,
+              });
+            } else if (data.stats) {
+              setStats(data.stats);
+            }
             if (data.profitChart) setProfitChart(data.profitChart);
             edgeFunctionWorked = true;
           }

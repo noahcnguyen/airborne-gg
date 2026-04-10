@@ -248,14 +248,24 @@ function DashboardContent() {
         }
 
         // Fallback: query Supabase directly
-        if (!edgeFunctionWorked && user) {
+        if (!edgeFunctionWorked) {
           const { data: ordersData } = await supabase
             .from('orders')
             .select('*')
-            .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(50);
-          if (ordersData) setOrders(ordersData);
+
+          if (ordersData && ordersData.length > 0) {
+            setOrders(ordersData);
+            const completed = ordersData.filter((o: any) => o.state === 'completed');
+            setStats({
+              total_profit: completed.reduce((sum: number, o: any) => sum + (o.actual_profit_cents / 100), 0),
+              total_orders: ordersData.length,
+              completed_orders: completed.length,
+              pending_orders: ordersData.filter((o: any) => o.state === 'submitted_to_zinc').length,
+              active_listings: 0,
+            });
+          }
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);

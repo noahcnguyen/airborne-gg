@@ -68,7 +68,7 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
 
   const avgOrderValue =
     stats.completed_orders > 0
-      ? currencyFormatter.format(stats.total_profit / stats.completed_orders / 100)
+      ? `$${(stats.total_profit / stats.completed_orders).toFixed(2)}`
       : "$0.00";
 
   const recentOrders = orders.slice(0, 5);

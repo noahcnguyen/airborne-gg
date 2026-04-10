@@ -4,15 +4,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { StoreData } from "@/hooks/useDashboardData";
 
 interface StoresTabProps {
-  storeData: StoreData | null;
+  stores: StoreData[];
   loading: boolean;
 }
 
-export function StoresTab({ storeData, loading }: StoresTabProps) {
+export function StoresTab({ stores, loading }: StoresTabProps) {
   const { user } = useAuth();
 
-  const connectedCount = storeData ? 1 : 0;
-  const availableSlots = 2 - connectedCount;
+  const maxSlots = 2;
+  const connectedCount = stores.length;
+  const availableSlots = Math.max(0, maxSlots - connectedCount);
 
   const handleConnectStore = () => {
     const userId = user?.id;
@@ -39,14 +40,13 @@ export function StoresTab({ storeData, loading }: StoresTabProps) {
     <div className="space-y-6">
       <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
         <p className="text-sm">
-          <span className="font-medium">Advanced Plan:</span> 2 stores allowed. {connectedCount} connected, {availableSlots} slots available.
+          <span className="font-medium">Advanced Plan:</span> {maxSlots} stores allowed. {connectedCount} connected, {availableSlots} slots available.
         </p>
       </div>
 
       <div className="space-y-4">
-        {/* Connected store card */}
-        {storeData && (
-          <div className="bg-card rounded-xl border p-5">
+        {stores.map((store, i) => (
+          <div key={store.ebay_username + i} className="bg-card rounded-xl border p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
@@ -54,10 +54,10 @@ export function StoresTab({ storeData, loading }: StoresTabProps) {
                 </div>
                 <div>
                   <p className="text-sm font-semibold">
-                    {storeData.ebay_username || "eBay Store"}
+                    {store.ebay_username || "eBay Store"}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Connected {new Date(storeData.connected_at).toLocaleDateString()}
+                    Connected {new Date(store.connected_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -66,9 +66,8 @@ export function StoresTab({ storeData, loading }: StoresTabProps) {
               </span>
             </div>
           </div>
-        )}
+        ))}
 
-        {/* Available slots */}
         {Array.from({ length: availableSlots }).map((_, i) => (
           <div
             key={i}

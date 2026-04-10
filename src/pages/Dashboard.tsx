@@ -129,12 +129,12 @@ function DashboardContent() {
 
   // Fetch dashboard data when selectedStoreId changes
   useEffect(() => {
-    if (!user || !selectedStoreId) return;
+    if (!user || !selectedStoreId || !session?.access_token) return;
 
     const fetchData = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error || !session) return;
+        const accessToken = session.access_token;
+        const userId = session.user.id;
 
         let edgeFunctionWorked = false;
         try {

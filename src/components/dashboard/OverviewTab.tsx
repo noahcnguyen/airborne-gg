@@ -102,7 +102,7 @@ function buildChartData(orders: OverviewOrder[], range: ChartRange) {
 
 export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
   const [chartRange, setChartRange] = useState<ChartRange>("30d");
-  const chartData = buildChartData(orders, chartRange, profitChart);
+  const chartData = buildChartData(orders, chartRange);
 
   const avgOrderValue =
     stats.completed_orders > 0

@@ -202,23 +202,42 @@ function DashboardContent() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
       try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) {
+          console.error('No session:', error);
+          return;
+        }
+
         const res = await fetch(
           'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data',
-          { headers: { Authorization: `Bearer ${session.access_token}` } }
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
+
+        if (!res.ok) {
+          console.error('Dashboard fetch failed:', res.status, await res.text());
+          return;
+        }
+
         const data = await res.json();
+        console.log('Dashboard data:', data);
         if (data.orders) setOrders(data.orders);
         if (data.stats) setStats(data.stats);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
+      } catch (err) {
+        console.error('Dashboard fetch error:', err);
       }
     };
+
     fetchData();
-  }, [user]);
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab") as Tab | null;

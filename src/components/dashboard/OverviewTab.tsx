@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ShoppingCart, Package } from "lucide-react";
 import {
   Area,
@@ -25,6 +26,27 @@ interface OverviewOrder {
   payout_estimate_cents: number;
   actual_amazon_total_cents: number;
   actual_profit_cents: number;
+  created_at?: string;
+}
+
+type ChartRange = "today" | "7d" | "14d" | "30d" | "90d";
+
+const chartRangeOptions: { value: ChartRange; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "7d", label: "7 days" },
+  { value: "14d", label: "14 days" },
+  { value: "30d", label: "30 days" },
+  { value: "90d", label: "90 days" },
+];
+
+function getRangeDays(range: ChartRange): number {
+  switch (range) {
+    case "today": return 1;
+    case "7d": return 7;
+    case "14d": return 14;
+    case "30d": return 30;
+    case "90d": return 90;
+  }
 }
 
 interface ProfitChartPoint {
@@ -43,28 +65,55 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-function buildChartData(orders: OverviewOrder[], profitChart?: ProfitChartPoint[]) {
-  // Use profitChart from API if available
-  if (profitChart && profitChart.length > 0) {
-    return profitChart.map((p) => ({
-      day: p.date,
-      Revenue: 0,
-      Profit: p.profit / 100,
-    }));
-  }
-  // Fallback: distribute orders across days
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const perDay = Math.max(1, Math.ceil(orders.length / 7));
-  return days.map((day, i) => {
-    const dayOrders = orders.slice(i * perDay, (i + 1) * perDay);
-    const revenue = dayOrders.reduce((s, o) => s + o.payout_estimate_cents, 0) / 100;
-    const profit = dayOrders.reduce((s, o) => s + o.actual_profit_cents, 0) / 100;
-    return { day, Revenue: revenue || 0, Profit: profit || 0 };
+function buildChartData(orders: OverviewOrder[], range: ChartRange, profitChart?: ProfitChartPoint[]) {
+  const days = getRangeDays(range);
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+  // Filter orders by date range
+  const filtered = orders.filter((o) => {
+    if (!o.created_at) return true;
+    return new Date(o.created_at) >= cutoff;
   });
+
+  // Use profitChart from API if available, filtered by range
+  if (profitChart && profitChart.length > 0) {
+    const filteredChart = profitChart.filter((p) => new Date(p.date) >= cutoff);
+    if (filteredChart.length > 0) {
+      return filteredChart.map((p) => ({
+        day: new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        Revenue: 0,
+        Profit: p.profit / 100,
+      }));
+    }
+  }
+
+  // Fallback: group filtered orders by day
+  const dayMap = new Map<string, { revenue: number; profit: number }>();
+  for (const o of filtered) {
+    const dateKey = o.created_at
+      ? new Date(o.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      : "Unknown";
+    const existing = dayMap.get(dateKey) || { revenue: 0, profit: 0 };
+    existing.revenue += o.payout_estimate_cents / 100;
+    existing.profit += o.actual_profit_cents / 100;
+    dayMap.set(dateKey, existing);
+  }
+
+  if (dayMap.size === 0) {
+    return [{ day: "No data", Revenue: 0, Profit: 0 }];
+  }
+
+  return Array.from(dayMap.entries()).map(([day, vals]) => ({
+    day,
+    Revenue: vals.revenue,
+    Profit: vals.profit,
+  }));
 }
 
 export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
-  const chartData = buildChartData(orders, profitChart);
+  const [chartRange, setChartRange] = useState<ChartRange>("30d");
+  const chartData = buildChartData(orders, chartRange, profitChart);
 
   const avgOrderValue =
     stats.completed_orders > 0
@@ -97,9 +146,21 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
         <div className="rounded-xl border bg-card p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Revenue & Profits</h2>
-            <span className="rounded-lg border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-              Last 4 weeks
-            </span>
+            <div className="flex items-center gap-1">
+              {chartRangeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setChartRange(opt.value)}
+                  className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                    chartRange === opt.value
+                      ? "bg-primary text-primary-foreground font-medium"
+                      : "border bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={340}>
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

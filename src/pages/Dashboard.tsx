@@ -41,6 +41,11 @@ interface Stats {
   active_listings: number;
 }
 
+interface ProfitChartPoint {
+  date: string;
+  profit: number;
+}
+
 type Tab = "overview" | "orders" | "autolister" | "stores" | "settings";
 
 const navItems: { icon: typeof LayoutDashboard; label: string; tab: Tab }[] = [
@@ -205,6 +210,7 @@ function DashboardContent() {
   const { storeData, loading: storeLoading } = useStoreData();
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats>({ total_profit: 0, total_orders: 0, completed_orders: 0, pending_orders: 0, active_listings: 0 });
+  const [profitChart, setProfitChart] = useState<ProfitChartPoint[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -215,26 +221,42 @@ function DashboardContent() {
           return;
         }
 
-        const res = await fetch(
-          'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data',
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        // Try edge function first
+        let edgeFunctionWorked = false;
+        try {
+          const res = await fetch(
+            'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data',
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
 
-        if (!res.ok) {
-          console.error('Dashboard fetch failed:', res.status, await res.text());
-          return;
+          if (res.ok) {
+            const data = await res.json();
+            console.log('Dashboard data:', data);
+            if (data.orders) setOrders(data.orders);
+            if (data.stats) setStats(data.stats);
+            if (data.profitChart) setProfitChart(data.profitChart);
+            edgeFunctionWorked = true;
+          }
+        } catch (err) {
+          console.error('Edge function failed, falling back to direct query:', err);
         }
 
-        const data = await res.json();
-        console.log('Dashboard data:', data);
-        if (data.orders) setOrders(data.orders);
-        if (data.stats) setStats(data.stats);
+        // Fallback: query Supabase directly
+        if (!edgeFunctionWorked && user) {
+          const { data: ordersData } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+          if (ordersData) setOrders(ordersData);
+        }
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       }
@@ -243,7 +265,7 @@ function DashboardContent() {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab") as Tab | null;
@@ -345,7 +367,7 @@ function DashboardContent() {
         </header>
 
         <main className="p-6">
-          {activeTab === "overview" && <OverviewTab stats={stats} orders={orders} />}
+          {activeTab === "overview" && <OverviewTab stats={stats} orders={orders} profitChart={profitChart} />}
           {activeTab === "orders" && <OrdersTab orders={orders} />}
           {activeTab === "autolister" && <AutolisterTab />}
           {activeTab === "stores" && <StoresTab storeData={storeData} loading={storeLoading} />}

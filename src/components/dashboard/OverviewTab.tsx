@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Package, ShoppingCart, TrendingUp, DollarSign, AlertTriangle } from "lucide-react";
+import { ShoppingCart, Package } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -28,9 +27,15 @@ interface OverviewOrder {
   actual_profit_cents: number;
 }
 
+interface ProfitChartPoint {
+  date: string;
+  profit: number;
+}
+
 interface OverviewTabProps {
   stats: Stats;
   orders: OverviewOrder[];
+  profitChart?: ProfitChartPoint[];
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -38,9 +43,17 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-function generateChartData(orders: OverviewOrder[]) {
+function buildChartData(orders: OverviewOrder[], profitChart?: ProfitChartPoint[]) {
+  // Use profitChart from API if available
+  if (profitChart && profitChart.length > 0) {
+    return profitChart.map((p) => ({
+      day: p.date,
+      Revenue: 0,
+      Profit: p.profit / 100,
+    }));
+  }
+  // Fallback: distribute orders across days
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  // Distribute orders across days for visualization
   const perDay = Math.max(1, Math.ceil(orders.length / 7));
   return days.map((day, i) => {
     const dayOrders = orders.slice(i * perDay, (i + 1) * perDay);
@@ -50,14 +63,13 @@ function generateChartData(orders: OverviewOrder[]) {
   });
 }
 
-export function OverviewTab({ stats, orders }: OverviewTabProps) {
-  const [timeRange] = useState("Last 4 weeks");
-  const chartData = generateChartData(orders);
+export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
+  const chartData = buildChartData(orders, profitChart);
 
-  const totalRevenue = orders.reduce((s, o) => s + o.payout_estimate_cents, 0) / 100;
-  const avgOrderValue = stats.total_orders > 0
-    ? currencyFormatter.format(totalRevenue / stats.total_orders)
-    : "$0.00";
+  const avgOrderValue =
+    stats.completed_orders > 0
+      ? currencyFormatter.format(stats.total_profit / stats.completed_orders / 100)
+      : "$0.00";
 
   const recentOrders = orders.slice(0, 5);
 
@@ -86,7 +98,7 @@ export function OverviewTab({ stats, orders }: OverviewTabProps) {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Revenue & Profits</h2>
             <span className="rounded-lg border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-              {timeRange}
+              Last 4 weeks
             </span>
           </div>
           <ResponsiveContainer width="100%" height={340}>
@@ -112,7 +124,7 @@ export function OverviewTab({ stats, orders }: OverviewTabProps) {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`}
+                tickFormatter={(v) => `$${v.toFixed(0)}`}
               />
               <Tooltip
                 contentStyle={{
@@ -162,9 +174,8 @@ export function OverviewTab({ stats, orders }: OverviewTabProps) {
                   <p className="text-xs text-muted-foreground">Active Listings</p>
                 </div>
               </div>
-              <span className="text-xs font-medium text-primary">↗ 13.35</span>
             </div>
-            <Progress value={75} className="mt-3 h-1.5" />
+            <Progress value={stats.active_listings > 0 ? 75 : 0} className="mt-3 h-1.5" />
           </div>
 
           {/* Total Sold Card */}
@@ -175,13 +186,11 @@ export function OverviewTab({ stats, orders }: OverviewTabProps) {
                   <ShoppingCart className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats.total_orders.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{stats.completed_orders.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground">Total Sold</p>
                 </div>
               </div>
-              <span className="text-xs font-medium text-green-500">↗ 50.8%</span>
             </div>
-            {/* Mini sparkline placeholder */}
             <div className="mt-3 h-8">
               <svg viewBox="0 0 200 30" className="h-full w-full">
                 <path
@@ -208,16 +217,14 @@ export function OverviewTab({ stats, orders }: OverviewTabProps) {
                 <span className="text-sm font-medium">{avgOrderValue}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Fulfillment Credits</span>
+                <span className="text-sm text-muted-foreground">Total Profit</span>
                 <span className="text-sm font-medium">
                   {currencyFormatter.format(stats.total_profit / 100)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Price Alerts</span>
-                <span className="text-sm font-medium text-primary">
-                  {stats.pending_orders}
-                </span>
+                <span className="text-sm font-medium text-primary">0</span>
               </div>
             </div>
           </div>
@@ -235,35 +242,35 @@ export function OverviewTab({ stats, orders }: OverviewTabProps) {
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="text-left p-4 font-medium">Order ID</th>
-                  <th className="text-left p-4 font-medium">ASIN</th>
-                  <th className="text-left p-4 font-medium">Buyer</th>
                   <th className="text-left p-4 font-medium">Status</th>
+                  <th className="text-left p-4 font-medium">Earnings</th>
+                  <th className="text-left p-4 font-medium">Cost</th>
                   <th className="text-left p-4 font-medium">Profit</th>
-                  <th className="text-left p-4 font-medium">Time</th>
                 </tr>
               </thead>
               <tbody>
                 {recentOrders.map((order) => {
                   const statusColor =
-                    order.state === "FULFILLED"
+                    order.state === "completed"
                       ? "bg-green-500/15 text-green-500"
-                      : order.state === "TRACKING"
+                      : order.state === "submitted_to_zinc"
                         ? "bg-blue-500/15 text-blue-500"
-                        : "bg-yellow-500/15 text-yellow-500";
+                        : order.state === "zinc_failed"
+                          ? "bg-red-500/15 text-red-500"
+                          : "bg-yellow-500/15 text-yellow-500";
                   return (
                     <tr key={order.ebay_order_id} className="border-b last:border-0">
                       <td className="p-4 font-mono text-xs">{order.ebay_order_id}</td>
-                      <td className="p-4 font-mono text-xs">—</td>
-                      <td className="p-4">—</td>
                       <td className="p-4">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
-                          {order.state || "Pending"}
+                          {order.state}
                         </span>
                       </td>
-                      <td className="p-4 font-semibold text-green-500">
+                      <td className="p-4">{currencyFormatter.format(order.payout_estimate_cents / 100)}</td>
+                      <td className="p-4">{currencyFormatter.format(order.actual_amazon_total_cents / 100)}</td>
+                      <td className={`p-4 font-semibold ${order.actual_profit_cents > 0 ? 'text-green-500' : order.actual_profit_cents < 0 ? 'text-red-500' : ''}`}>
                         {currencyFormatter.format(order.actual_profit_cents / 100)}
                       </td>
-                      <td className="p-4 text-muted-foreground text-xs">—</td>
                     </tr>
                   );
                 })}

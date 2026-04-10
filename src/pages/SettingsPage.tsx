@@ -215,30 +215,33 @@ function SettingsContent() {
   const { user, signOut } = useAuth();
   const { planLabel } = useUserPlan();
   const navigate = useNavigate();
-  const [firstName, setFirstName] = useState(user?.user_metadata?.full_name?.split(' ')[0] || '');
-  const [lastName, setLastName] = useState(user?.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
+  const [displayNameField, setDisplayNameField] = useState('');
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [accounts, setAccounts] = useState<AmazonAccount[]>([]);
   const [editAccountId, setEditAccountId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [connectingDiscord, setConnectingDiscord] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const displayName = firstName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const displayName = displayNameField || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.slice(0, 2).toUpperCase();
   const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
   const discordIdentity = user?.identities?.find(i => i.provider === 'discord');
 
-  // Load accounts from Supabase
+  // Load profile and accounts from Supabase
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data } = await supabase
-        .from('amazon_accounts')
-        .select('id, email, totp_key_encrypted, card_number_encrypted')
-        .eq('user_id', user.id)
-        .eq('is_active', true);
-      if (data) {
-        setAccounts(data.map(a => ({
+      const [profileRes, accountsRes] = await Promise.all([
+        supabase.from('profiles').select('display_name').eq('id', user.id).single(),
+        supabase.from('amazon_accounts').select('id, email, totp_key_encrypted, card_number_encrypted').eq('user_id', user.id).eq('is_active', true),
+      ]);
+      if (profileRes.data) {
+        setDisplayNameField(profileRes.data.display_name || '');
+      }
+      setProfileLoaded(true);
+      if (accountsRes.data) {
+        setAccounts(accountsRes.data.map(a => ({
           id: a.id,
           email: a.email,
           hasTotp: !!a.totp_key_encrypted,
@@ -352,8 +355,17 @@ function SettingsContent() {
     navigate('/login');
   };
 
-  const handleSaveProfile = () => {
-    toast.success('Profile saved successfully');
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ display_name: displayNameField })
+      .eq('id', user.id);
+    if (error) {
+      toast.error('Failed to save profile');
+    } else {
+      toast.success('Profile saved');
+    }
   };
 
   const handleConnectDiscord = async () => {
@@ -418,22 +430,20 @@ function SettingsContent() {
           {/* Profile */}
           <div className="bg-card rounded-xl border p-6">
             <h2 className="font-semibold text-lg mb-5">Profile Information</h2>
-            <div className="grid sm:grid-cols-2 gap-4 mb-4">
-              <div>
-                <Label>First Name</Label>
-                <Input value={firstName} onChange={e => setFirstName(e.target.value)} className="mt-1.5 rounded-md" />
-              </div>
-              <div>
-                <Label>Last Name</Label>
-                <Input value={lastName} onChange={e => setLastName(e.target.value)} className="mt-1.5 rounded-md" />
-              </div>
+            <div className="mb-4">
+              <Label>Display Name</Label>
+              {profileLoaded ? (
+                <Input value={displayNameField} onChange={e => setDisplayNameField(e.target.value)} className="mt-1.5 rounded-md" placeholder="Your display name" />
+              ) : (
+                <Input disabled className="mt-1.5 rounded-md bg-surface-1" placeholder="Loading..." />
+              )}
             </div>
             <div className="mb-5">
               <Label>Email</Label>
               <Input value={user?.email || ''} disabled className="mt-1.5 rounded-md bg-surface-1" />
-              <p className="text-xs text-muted-foreground mt-1">Email is managed by your OAuth provider</p>
+              <p className="text-xs text-muted-foreground mt-1">Email is managed by your authentication provider</p>
             </div>
-            <Button onClick={handleSaveProfile} className="gradient-primary-bg text-primary-foreground rounded-md">Save Profile</Button>
+            <Button onClick={handleSaveProfile} disabled={!profileLoaded} className="gradient-primary-bg text-primary-foreground rounded-md">Save Profile</Button>
           </div>
 
           {/* Amazon Accounts */}

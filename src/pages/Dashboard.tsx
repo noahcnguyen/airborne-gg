@@ -271,30 +271,21 @@ function DashboardContent() {
           }
         }
 
-        // Fetch active eBay listing count
+        // Fetch active eBay listing count via edge function
         try {
-          const { data: ebayStore } = await supabase
-            .from('ebay_stores')
-            .select('access_token, access_token_expires_at')
-            .eq('user_id', session.user.id)
-            .eq('is_active', true)
-            .single();
-
-          if (ebayStore?.access_token) {
-            const ebayRes = await fetch(
-              'https://api.ebay.com/sell/inventory/v1/inventory_item?limit=1',
-              {
-                headers: {
-                  'Authorization': `Bearer ${ebayStore.access_token}`,
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                }
-              }
-            );
-            if (ebayRes.ok) {
-              const ebayData = await ebayRes.json();
-              const count = ebayData.total || 0;
-              setStats(prev => ({ ...prev, active_listings: count }));
+          const listingRes = await fetch(
+            'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/ebay-listing-count',
+            {
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          if (listingRes.ok) {
+            const listingData = await listingRes.json();
+            if (listingData.total > 0) {
+              setStats(prev => ({ ...prev, active_listings: listingData.total }));
             }
           }
         } catch (e) {

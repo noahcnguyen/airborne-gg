@@ -323,14 +323,16 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
                             : "Pending";
                   const statusColor =
                     order.state === "completed"
-                      ? "bg-green-500/15 text-green-500"
+                      ? "bg-emerald-100 text-emerald-600"
                       : order.state === "submitted_to_zinc"
-                        ? "bg-blue-500/15 text-blue-500"
+                        ? "bg-purple-100 text-purple-600"
                         : order.state === "zinc_failed"
-                          ? "bg-red-500/15 text-red-500"
+                          ? "bg-red-100 text-red-600"
                           : order.state === "tracking_pending_manual_carrier"
-                            ? "bg-cyan-500/15 text-cyan-500"
-                            : "bg-yellow-500/15 text-yellow-500";
+                            ? "bg-blue-100 text-blue-600"
+                            : order.state === "awaiting_tba_conversion"
+                              ? "bg-orange-100 text-orange-600"
+                              : "bg-orange-100 text-orange-600";
 
                   // Extract ASIN from amazon_url
                   const asinMatch = order.amazon_url?.match(/\/dp\/([A-Z0-9]+)/);

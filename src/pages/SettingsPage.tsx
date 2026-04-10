@@ -6,8 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthGuard } from '@/components/AuthGuard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+
+interface AmazonAccount {
+  id: string;
+  email: string;
+  hasTotp: boolean;
+  cardLast4: string;
+}
 
 interface AmazonFormData {
   email: string;
@@ -43,36 +51,23 @@ const navItems = [
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
-function SettingsContent() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  const [firstName, setFirstName] = useState(user?.user_metadata?.full_name?.split(' ')[0] || '');
-  const [lastName, setLastName] = useState(user?.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
-  const [connectingDiscord, setConnectingDiscord] = useState(false);
-  const [formData, setFormData] = useState<AmazonFormData>(emptyForm);
+function AmazonAccountModal({ onSave, editId, saving }: { onSave: (form: AmazonFormData, editId?: string) => void; editId?: string; saving: boolean }) {
+  const [form, setForm] = useState<AmazonFormData>(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
   const [showTotp, setShowTotp] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(!!editId);
+  const { user } = useAuth();
 
-  const displayName = firstName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-  const initials = displayName.slice(0, 2).toUpperCase();
-  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
-  const discordIdentity = user?.identities?.find(i => i.provider === 'discord');
-
-  // Load existing Amazon account on mount
   useEffect(() => {
-    if (!user) return;
+    if (!editId || !user) return;
     const load = async () => {
       const { data } = await supabase
         .from('amazon_accounts')
         .select('*')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
+        .eq('id', editId)
         .maybeSingle();
-
       if (data) {
-        setFormData({
+        setForm({
           email: data.email || '',
           password: data.password_encrypted || '',
           totpKey: data.totp_key_encrypted || '',
@@ -91,52 +86,263 @@ function SettingsContent() {
           billingPhone: data.billing_phone || '',
         });
       }
-      setLoaded(true);
+      setLoading(false);
+    };
+    load();
+  }, [editId, user]);
+
+  const update = (field: keyof AmazonFormData, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSave = () => {
+    if (!form.email || !form.password) {
+      toast.error('Email and password are required');
+      return;
+    }
+    onSave(form, editId);
+  };
+
+  if (loading) return <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>;
+
+  return (
+    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+      <div className="bg-accent/50 border border-primary/20 rounded-lg p-3 flex items-start gap-2">
+        <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-muted-foreground">Your credentials are encrypted and stored securely. We never share your data.</p>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-medium text-sm">Amazon Login</h4>
+        <div>
+          <Label>Email</Label>
+          <Input value={form.email} onChange={e => update('email', e.target.value)} placeholder="amazon@email.com" className="mt-1 rounded-md" />
+        </div>
+        <div>
+          <Label>Password</Label>
+          <div className="relative mt-1">
+            <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => update('password', e.target.value)} placeholder="••••••••" className="rounded-md pr-10" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+        <div>
+          <Label>TOTP Secret Key</Label>
+          <p className="text-xs text-muted-foreground mb-1">This is the setup key from your authenticator app, not a one-time code.</p>
+          <div className="relative">
+            <Input type={showTotp ? 'text' : 'password'} value={form.totpKey} onChange={e => update('totpKey', e.target.value)} placeholder="JBSWY3DPEHPK3PXP" className="rounded-md pr-10" />
+            <button type="button" onClick={() => setShowTotp(!showTotp)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              {showTotp ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-medium text-sm">Payment Method</h4>
+        <div>
+          <Label>Cardholder Name</Label>
+          <Input value={form.cardName} onChange={e => update('cardName', e.target.value)} placeholder="John Doe" className="mt-1 rounded-md" />
+        </div>
+        <div>
+          <Label>Card Number</Label>
+          <Input value={form.cardNumber} onChange={e => update('cardNumber', e.target.value)} placeholder="4242424242424242" className="mt-1 rounded-md" />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label>Exp Month</Label>
+            <Input value={form.cardExpMonth} onChange={e => update('cardExpMonth', e.target.value.replace(/\D/g, '').slice(0, 2))} placeholder="01" className="mt-1 rounded-md" />
+          </div>
+          <div>
+            <Label>Exp Year</Label>
+            <Input value={form.cardExpYear} onChange={e => update('cardExpYear', e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="2026" className="mt-1 rounded-md" />
+          </div>
+          <div>
+            <Label>CVV</Label>
+            <Input type="password" value={form.cardCvv} onChange={e => update('cardCvv', e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="•••" className="mt-1 rounded-md" />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-medium text-sm">Billing Address</h4>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>First Name</Label>
+            <Input value={form.billingFirst} onChange={e => update('billingFirst', e.target.value)} className="mt-1 rounded-md" />
+          </div>
+          <div>
+            <Label>Last Name</Label>
+            <Input value={form.billingLast} onChange={e => update('billingLast', e.target.value)} className="mt-1 rounded-md" />
+          </div>
+        </div>
+        <div>
+          <Label>Address Line 1</Label>
+          <Input value={form.billingAddress1} onChange={e => update('billingAddress1', e.target.value)} className="mt-1 rounded-md" />
+        </div>
+        <div>
+          <Label>Address Line 2</Label>
+          <Input value={form.billingAddress2} onChange={e => update('billingAddress2', e.target.value)} className="mt-1 rounded-md" />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label>City</Label>
+            <Input value={form.billingCity} onChange={e => update('billingCity', e.target.value)} className="mt-1 rounded-md" />
+          </div>
+          <div>
+            <Label>State</Label>
+            <Input value={form.billingState} onChange={e => update('billingState', e.target.value)} className="mt-1 rounded-md" />
+          </div>
+          <div>
+            <Label>ZIP</Label>
+            <Input value={form.billingZip} onChange={e => update('billingZip', e.target.value)} className="mt-1 rounded-md" />
+          </div>
+        </div>
+        <div>
+          <Label>Phone</Label>
+          <Input value={form.billingPhone} onChange={e => update('billingPhone', e.target.value)} placeholder="555-123-4567" className="mt-1 rounded-md" />
+        </div>
+      </div>
+
+      <Button onClick={handleSave} disabled={saving} className="w-full gradient-primary-bg text-primary-foreground rounded-md">
+        {saving ? 'Saving...' : editId ? 'Update Account' : 'Save Account'}
+      </Button>
+    </div>
+  );
+}
+
+function SettingsContent() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [firstName, setFirstName] = useState(user?.user_metadata?.full_name?.split(' ')[0] || '');
+  const [lastName, setLastName] = useState(user?.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
+  const [accounts, setAccounts] = useState<AmazonAccount[]>([]);
+  const [editAccountId, setEditAccountId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [connectingDiscord, setConnectingDiscord] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const displayName = firstName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const initials = displayName.slice(0, 2).toUpperCase();
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
+  const discordIdentity = user?.identities?.find(i => i.provider === 'discord');
+
+  // Load accounts from Supabase
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from('amazon_accounts')
+        .select('id, email, totp_key_encrypted, card_number_encrypted')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+      if (data) {
+        setAccounts(data.map(a => ({
+          id: a.id,
+          email: a.email,
+          hasTotp: !!a.totp_key_encrypted,
+          cardLast4: (a.card_number_encrypted || '').slice(-4) || '••••',
+        })));
+      }
     };
     load();
   }, [user]);
 
-  const updateField = (field: keyof AmazonFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleSaveAccount = async (form: AmazonFormData, editId?: string) => {
+    if (!user) return;
+    setSaving(true);
+
+    if (editId) {
+      const { error } = await supabase
+        .from('amazon_accounts')
+        .update({
+          email: form.email,
+          password_encrypted: form.password,
+          totp_key_encrypted: form.totpKey,
+          card_name: form.cardName,
+          card_number_encrypted: form.cardNumber,
+          card_cvv_encrypted: form.cardCvv,
+          card_exp_month: parseInt(form.cardExpMonth) || 0,
+          card_exp_year: parseInt(form.cardExpYear) || 0,
+          billing_first: form.billingFirst,
+          billing_last: form.billingLast,
+          billing_address1: form.billingAddress1,
+          billing_address2: form.billingAddress2 || '',
+          billing_city: form.billingCity,
+          billing_state: form.billingState,
+          billing_zip: form.billingZip,
+          billing_phone: form.billingPhone,
+        })
+        .eq('id', editId);
+
+      setSaving(false);
+      if (error) {
+        toast.error('Failed to update: ' + error.message);
+        return;
+      }
+      toast.success('Amazon account updated!');
+    } else {
+      const { error } = await supabase
+        .from('amazon_accounts')
+        .insert({
+          user_id: user.id,
+          email: form.email,
+          password_encrypted: form.password,
+          totp_key_encrypted: form.totpKey,
+          card_name: form.cardName,
+          card_number_encrypted: form.cardNumber,
+          card_cvv_encrypted: form.cardCvv,
+          card_exp_month: parseInt(form.cardExpMonth) || 0,
+          card_exp_year: parseInt(form.cardExpYear) || 0,
+          billing_first: form.billingFirst,
+          billing_last: form.billingLast,
+          billing_address1: form.billingAddress1,
+          billing_address2: form.billingAddress2 || '',
+          billing_city: form.billingCity,
+          billing_state: form.billingState,
+          billing_zip: form.billingZip,
+          billing_phone: form.billingPhone,
+          billing_country: 'US',
+          is_active: true,
+        });
+
+      setSaving(false);
+      if (error) {
+        toast.error('Failed to save: ' + error.message);
+        return;
+      }
+      toast.success('Amazon account saved!');
+    }
+
+    // Reload accounts
+    const { data } = await supabase
+      .from('amazon_accounts')
+      .select('id, email, totp_key_encrypted, card_number_encrypted')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+    if (data) {
+      setAccounts(data.map(a => ({
+        id: a.id,
+        email: a.email,
+        hasTotp: !!a.totp_key_encrypted,
+        cardLast4: (a.card_number_encrypted || '').slice(-4) || '••••',
+      })));
+    }
+
+    setModalOpen(false);
+    setEditAccountId(null);
   };
 
-  const handleSaveAmazon = async () => {
-    if (!user) return;
-    if (!formData.email || !formData.password) {
-      toast.error('Email and password are required');
-      return;
-    }
-    setSaving(true);
+  const handleRemoveAccount = async (id: string) => {
     const { error } = await supabase
       .from('amazon_accounts')
-      .upsert({
-        user_id: user.id,
-        email: formData.email,
-        password_encrypted: formData.password,
-        totp_key_encrypted: formData.totpKey,
-        card_name: formData.cardName,
-        card_number_encrypted: formData.cardNumber,
-        card_cvv_encrypted: formData.cardCvv,
-        card_exp_month: parseInt(formData.cardExpMonth) || 0,
-        card_exp_year: parseInt(formData.cardExpYear) || 0,
-        billing_first: formData.billingFirst,
-        billing_last: formData.billingLast,
-        billing_address1: formData.billingAddress1,
-        billing_address2: formData.billingAddress2 || '',
-        billing_city: formData.billingCity,
-        billing_state: formData.billingState,
-        billing_zip: formData.billingZip,
-        billing_phone: formData.billingPhone,
-        billing_country: 'US',
-        is_active: true,
-      }, { onConflict: 'user_id' });
-
-    setSaving(false);
+      .update({ is_active: false })
+      .eq('id', id);
     if (error) {
-      toast.error('Failed to save Amazon account: ' + error.message);
-    } else {
-      toast.success('Amazon account saved successfully!');
+      toast.error('Failed to remove account');
+      return;
     }
+    setAccounts(prev => prev.filter(a => a.id !== id));
+    toast.success('Account removed');
   };
 
   const handleSignOut = async () => {
@@ -165,7 +371,6 @@ function SettingsContent() {
 
   return (
     <div className="min-h-screen flex bg-surface-1">
-      {/* Sidebar */}
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r flex flex-col z-40">
         <div className="p-5 flex items-center gap-2">
           <Plane className="h-6 w-6 text-primary" />
@@ -197,7 +402,6 @@ function SettingsContent() {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 ml-64">
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b h-14 flex items-center justify-between px-6">
           <div className="flex items-center gap-2 text-sm">
@@ -293,152 +497,77 @@ function SettingsContent() {
                   </div>
                   <span className="px-3 py-1 rounded-full bg-success/15 text-success text-xs font-medium">Active</span>
                 </div>
-
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div className="bg-surface-1 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      Current Period
-                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Calendar className="h-3.5 w-3.5" /> Current Period</div>
                     <p className="text-sm font-medium">Apr 9 – May 9, 2026</p>
                   </div>
                   <div className="bg-surface-1 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      Next Renewal
-                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Calendar className="h-3.5 w-3.5" /> Next Renewal</div>
                     <p className="text-sm font-medium">May 9, 2026</p>
                   </div>
                 </div>
-
                 <div className="flex flex-wrap gap-3 pt-1">
-                  <Button variant="outline" size="sm" className="rounded-md gap-2" onClick={() => toast.info('Stripe billing portal will be connected soon.')}>
-                    <ExternalLink className="h-3.5 w-3.5" /> Manage Billing
-                  </Button>
-                  <Button variant="ghost" size="sm" className="rounded-md gap-2 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => toast.info('Stripe cancellation flow will be connected soon.')}>
-                    Cancel Plan
-                  </Button>
+                  <Button variant="outline" size="sm" className="rounded-md gap-2" onClick={() => toast.info('Stripe billing portal will be connected soon.')}><ExternalLink className="h-3.5 w-3.5" /> Manage Billing</Button>
+                  <Button variant="ghost" size="sm" className="rounded-md gap-2 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => toast.info('Stripe cancellation flow will be connected soon.')}>Cancel Plan</Button>
                 </div>
-
-                <p className="text-xs text-muted-foreground">
-                  Billing is managed through Stripe. You'll be redirected to a secure portal to update payment methods or cancel.
-                </p>
+                <p className="text-xs text-muted-foreground">Billing is managed through Stripe. You'll be redirected to a secure portal to update payment methods or cancel.</p>
               </div>
             </div>
           </div>
 
-          {/* Amazon Account */}
+          {/* Amazon Accounts */}
           <div className="bg-card rounded-xl border p-6">
-            <h2 className="font-semibold text-lg mb-5">Amazon Account</h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-semibold text-lg">Amazon Profile(s)</h2>
+              <Dialog open={modalOpen} onOpenChange={o => { setModalOpen(o); if (!o) setEditAccountId(null); }}>
+                <DialogTrigger asChild>
+                  <Button className="gradient-primary-bg text-primary-foreground rounded-md gap-2" onClick={() => { setEditAccountId(null); setModalOpen(true); }}>
+                    <Plus className="h-4 w-4" /> Add Account
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md rounded-xl">
+                  <DialogHeader>
+                    <DialogTitle>{editAccountId ? 'Edit Amazon Account' : 'Add Amazon Account'}</DialogTitle>
+                  </DialogHeader>
+                  <AmazonAccountModal onSave={handleSaveAccount} editId={editAccountId || undefined} saving={saving} />
+                </DialogContent>
+              </Dialog>
+            </div>
 
             <div className="bg-accent/50 border border-primary/20 rounded-lg p-3 mb-5 flex items-start gap-2">
               <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-xs text-muted-foreground">All credentials are encrypted at rest. We use bank-level encryption to protect your data.</p>
             </div>
 
-            {!loaded ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+            {accounts.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No Amazon accounts added yet. Click "Add Account" to get started.</p>
             ) : (
-              <div className="space-y-5">
-                {/* Login */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm">Amazon Login</h4>
-                  <div>
-                    <Label>Email</Label>
-                    <Input value={formData.email} onChange={e => updateField('email', e.target.value)} placeholder="amazon@email.com" className="mt-1 rounded-md" />
-                  </div>
-                  <div>
-                    <Label>Password</Label>
-                    <div className="relative mt-1">
-                      <Input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => updateField('password', e.target.value)} placeholder="••••••••" className="rounded-md pr-10" />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <div className="flex flex-wrap gap-3">
+                {accounts.map(a => {
+                  const emailParts = a.email.split('@');
+                  const masked = emailParts[0].slice(0, 2) + '•••@' + (emailParts[1] || '');
+                  const acInitials = a.email.slice(0, 2).toUpperCase();
+                  return (
+                    <div key={a.id} className="group relative bg-surface-1 border rounded-lg px-4 py-3 cursor-pointer hover:border-primary/30 transition-colors"
+                      onDoubleClick={() => { setEditAccountId(a.id); setModalOpen(true); }}>
+                      <button onClick={() => handleRemoveAccount(a.id)}
+                        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X className="h-3 w-3" />
                       </button>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-md gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">{acInitials}</div>
+                        <div>
+                          <p className="text-sm font-medium">{masked}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{a.hasTotp ? '🔐 TOTP' : '🔓 No TOTP'}</span>
+                            <span>•••• {a.cardLast4}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <Label>TOTP Secret Key</Label>
-                    <p className="text-xs text-muted-foreground mb-1">This is the setup key from your authenticator app, not a one-time code.</p>
-                    <div className="relative">
-                      <Input type={showTotp ? 'text' : 'password'} value={formData.totpKey} onChange={e => updateField('totpKey', e.target.value)} placeholder="JBSWY3DPEHPK3PXP" className="rounded-md pr-10" />
-                      <button type="button" onClick={() => setShowTotp(!showTotp)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        {showTotp ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payment */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm">Payment Method</h4>
-                  <div>
-                    <Label>Cardholder Name</Label>
-                    <Input value={formData.cardName} onChange={e => updateField('cardName', e.target.value)} placeholder="John Doe" className="mt-1 rounded-md" />
-                  </div>
-                  <div>
-                    <Label>Card Number</Label>
-                    <Input value={formData.cardNumber} onChange={e => updateField('cardNumber', e.target.value)} placeholder="4242424242424242" className="mt-1 rounded-md" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <Label>Exp Month</Label>
-                      <Input value={formData.cardExpMonth} onChange={e => updateField('cardExpMonth', e.target.value.replace(/\D/g, '').slice(0, 2))} placeholder="01" className="mt-1 rounded-md" />
-                    </div>
-                    <div>
-                      <Label>Exp Year</Label>
-                      <Input value={formData.cardExpYear} onChange={e => updateField('cardExpYear', e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="2026" className="mt-1 rounded-md" />
-                    </div>
-                    <div>
-                      <Label>CVV</Label>
-                      <Input type="password" value={formData.cardCvv} onChange={e => updateField('cardCvv', e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="•••" className="mt-1 rounded-md" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Billing */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm">Billing Address</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>First Name</Label>
-                      <Input value={formData.billingFirst} onChange={e => updateField('billingFirst', e.target.value)} className="mt-1 rounded-md" />
-                    </div>
-                    <div>
-                      <Label>Last Name</Label>
-                      <Input value={formData.billingLast} onChange={e => updateField('billingLast', e.target.value)} className="mt-1 rounded-md" />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Address Line 1</Label>
-                    <Input value={formData.billingAddress1} onChange={e => updateField('billingAddress1', e.target.value)} className="mt-1 rounded-md" />
-                  </div>
-                  <div>
-                    <Label>Address Line 2</Label>
-                    <Input value={formData.billingAddress2} onChange={e => updateField('billingAddress2', e.target.value)} className="mt-1 rounded-md" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <Label>City</Label>
-                      <Input value={formData.billingCity} onChange={e => updateField('billingCity', e.target.value)} className="mt-1 rounded-md" />
-                    </div>
-                    <div>
-                      <Label>State</Label>
-                      <Input value={formData.billingState} onChange={e => updateField('billingState', e.target.value)} className="mt-1 rounded-md" />
-                    </div>
-                    <div>
-                      <Label>ZIP</Label>
-                      <Input value={formData.billingZip} onChange={e => updateField('billingZip', e.target.value)} className="mt-1 rounded-md" />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Phone</Label>
-                    <Input value={formData.billingPhone} onChange={e => updateField('billingPhone', e.target.value)} placeholder="555-123-4567" className="mt-1 rounded-md" />
-                  </div>
-                </div>
-
-                <Button onClick={handleSaveAmazon} disabled={saving} className="w-full gradient-primary-bg text-primary-foreground rounded-md">
-                  {saving ? 'Saving...' : 'Save Amazon Account'}
-                </Button>
+                  );
+                })}
               </div>
             )}
           </div>

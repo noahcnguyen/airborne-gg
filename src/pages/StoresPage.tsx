@@ -4,11 +4,11 @@ import { StoresTab } from "@/components/dashboard/StoresTab";
 import { useStoreData } from "@/hooks/useDashboardData";
 
 function StoresContent() {
-  const { storeData, loading } = useStoreData();
+  const { stores, loading } = useStoreData();
 
   return (
     <DashboardLayout title="My Stores">
-      <StoresTab storeData={storeData} loading={loading} />
+      <StoresTab stores={stores} loading={loading} />
     </DashboardLayout>
   );
 }

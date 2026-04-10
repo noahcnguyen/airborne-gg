@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingCart, Package } from "lucide-react";
+import { ShoppingCart, Package, ChevronDown } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -147,20 +147,19 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
         <div className="rounded-xl border bg-card p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Revenue & Profits</h2>
-            <div className="flex items-center gap-1">
-              {chartRangeOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setChartRange(opt.value)}
-                  className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
-                    chartRange === opt.value
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "border bg-background text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div className="relative">
+              <select
+                value={chartRange}
+                onChange={(e) => setChartRange(e.target.value as ChartRange)}
+                className="appearance-none rounded-lg border bg-background pl-3 pr-8 py-1.5 text-xs text-muted-foreground cursor-pointer hover:text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {chartRangeOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             </div>
           </div>
           <ResponsiveContainer width="100%" height={340}>

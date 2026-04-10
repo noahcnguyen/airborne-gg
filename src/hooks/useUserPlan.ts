@@ -31,9 +31,11 @@ export function useUserPlan() {
     fetchPlan();
   }, [user]);
 
-  const planLabel = plan
-    ? plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan"
-    : "Free Plan";
+  const planLabel = loading
+    ? ""
+    : plan
+      ? plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan"
+      : "Free Plan";
 
   return { plan, planLabel, loading };
 }

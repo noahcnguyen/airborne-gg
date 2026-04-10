@@ -398,7 +398,7 @@ function SettingsContent() {
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-              <p className="text-xs text-muted-foreground">{planLabel}</p>
+              <p className="text-xs text-muted-foreground">{planLabel || <span className="opacity-0">Loading</span>}</p>
             </div>
           </div>
         </div>
@@ -550,7 +550,7 @@ function SettingsContent() {
               <div className="flex-1 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold text-base">{planLabel}</p>
+                    <p className="font-semibold text-base">{planLabel || <span className="opacity-0">Loading</span>}</p>
                     <p className="text-sm text-muted-foreground">$49.99/month</p>
                   </div>
                   <span className="px-3 py-1 rounded-full bg-success/15 text-success text-xs font-medium">Active</span>

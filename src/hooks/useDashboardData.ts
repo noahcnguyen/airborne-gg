@@ -58,6 +58,7 @@ export function useDashboardData() {
 }
 
 export interface StoreData {
+  id?: string;
   ebay_username: string;
   connected_at: string;
   access_token_expires_at: string;
@@ -79,9 +80,10 @@ export function useStoreData() {
       try {
         const { data } = await supabase
           .from("ebay_stores")
-          .select("ebay_username, connected_at, access_token_expires_at, is_active")
+          .select("id, ebay_username, connected_at, access_token_expires_at, is_active")
           .eq("user_id", user.id)
-          .eq("is_active", true);
+          .eq("is_active", true)
+          .order("connected_at", { ascending: true });
 
         setStores(data || []);
       } catch (error) {

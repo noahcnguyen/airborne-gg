@@ -154,12 +154,16 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
                   <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -187,7 +191,7 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
               <Area
                 type="monotone"
                 dataKey="Revenue"
-                stroke="hsl(var(--primary))"
+                stroke="#3b82f6"
                 strokeWidth={2}
                 fill="url(#colorRevenue)"
               />
@@ -197,6 +201,13 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
                 stroke="#22c55e"
                 strokeWidth={2}
                 fill="url(#colorProfit)"
+              />
+              <Area
+                type="monotone"
+                dataKey="Cost"
+                stroke="#ef4444"
+                strokeWidth={2}
+                fill="url(#colorCost)"
               />
               <Legend
                 verticalAlign="bottom"

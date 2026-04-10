@@ -1,4 +1,4 @@
-import { Lock, Plus, Store, X } from "lucide-react";
+import { Lock, Plus, Store, X, ArrowUpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { StoreData } from "@/hooks/useDashboardData";
@@ -25,11 +25,19 @@ interface StoresTabProps {
 
 export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) {
   const { user } = useAuth();
-  const { planLabel } = useUserPlan();
+  const { plan, planLabel } = useUserPlan();
 
-  const maxSlots = 2;
+  const PLAN_STORE_LIMITS: Record<string, number> = {
+    free: 0,
+    starter: 1,
+    advanced: 2,
+    pro: 5,
+    founder: 2,
+  };
+
+  const storeLimit = PLAN_STORE_LIMITS[plan || 'free'] ?? 0;
   const connectedCount = stores.length;
-  const availableSlots = Math.max(0, maxSlots - connectedCount);
+  const availableSlots = Math.max(0, storeLimit - connectedCount);
 
   const disconnectStore = async (storeId: string) => {
     const { error } = await supabase
@@ -71,7 +79,7 @@ export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) 
     <div className="space-y-6">
       <div className="bg-accent/50 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
         <p className="text-sm">
-          <span className="font-medium">{planLabel}:</span> {maxSlots} stores allowed. {connectedCount} connected, {availableSlots} slots available.
+          <span className="font-medium">{planLabel}:</span> {storeLimit} stores allowed. {connectedCount} connected, {availableSlots} slots available.
         </p>
       </div>
 
@@ -136,13 +144,18 @@ export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) 
         ))}
       </div>
 
-      {availableSlots > 0 && (
+      {connectedCount < storeLimit ? (
         <Button
           className="gradient-primary-bg text-primary-foreground rounded-md gap-2"
           onClick={handleConnectStore}
         >
           <Plus className="h-4 w-4" /> Connect Store
         </Button>
+      ) : (
+        <div className="bg-accent/50 border border-dashed rounded-xl p-5 flex items-center justify-center gap-3 text-muted-foreground">
+          <ArrowUpCircle className="h-4 w-4" />
+          <span className="text-sm">Upgrade your plan to add more stores</span>
+        </div>
       )}
     </div>
   );

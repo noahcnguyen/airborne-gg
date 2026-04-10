@@ -108,24 +108,7 @@ function DashboardContent() {
           }
         }
 
-        try {
-          const listingRes = await fetch(
-            'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/ebay-listing-count',
-            {
-              headers: {
-                'Authorization': `Bearer ${session.access_token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-          if (listingRes.ok) {
-            const listingData = await listingRes.json();
-            const activeListings = Number(listingData.count ?? listingData.total ?? 0);
-            setStats(prev => ({ ...prev, active_listings: activeListings }));
-          }
-        } catch (e) {
-          console.error('eBay listings fetch failed:', e);
-        }
+
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       }

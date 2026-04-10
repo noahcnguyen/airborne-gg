@@ -63,6 +63,7 @@ function AutolisterContent() {
           { headers: { Authorization: `Bearer ${session?.access_token}` } }
         );
         const data = await res.json();
+        console.log('Store info:', data);
         if (data && !data.error) setStoreInfo(data);
         else setStoreInfo(null);
       } catch {
@@ -88,56 +89,7 @@ function AutolisterContent() {
       onStoreChange={setSelectedStoreId}
     >
       <div className="space-y-6">
-        {/* Store Info Panel */}
-        {storeInfoLoading ? (
-          <div className="rounded-xl border bg-card p-5 space-y-3">
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-3 w-64" />
-            <Skeleton className="h-2 w-full" />
-            <Skeleton className="h-2 w-full" />
-          </div>
-        ) : storeInfo && (
-          <div className="rounded-xl border bg-card p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm text-muted-foreground">eBay Store Subscription</span>
-              <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-500/20 text-orange-400">
-                {storeInfo.subscription}
-              </span>
-              <span className="text-sm text-muted-foreground">{storeInfo.free_listings.toLocaleString()}/mo free listings</span>
-            </div>
-            <p className="text-sm font-medium mb-3">Monthly Selling Limits</p>
-            <p className="text-xs text-muted-foreground mb-4">
-              You've used {storeInfo.items_used.toLocaleString()} of {storeInfo.items_limit.toLocaleString()} items
-              and ${storeInfo.amount_used.toLocaleString()} of ${storeInfo.amount_limit.toLocaleString()} USD this month.
-            </p>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Items</span>
-                  <span>{storeInfo.items_used.toLocaleString()} / {storeInfo.items_limit.toLocaleString()}</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-500 rounded-full transition-all"
-                    style={{ width: `${storeInfo.items_limit > 0 ? Math.min((storeInfo.items_used / storeInfo.items_limit) * 100, 100) : 0}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Amount</span>
-                  <span>${storeInfo.amount_used.toLocaleString()} / ${storeInfo.amount_limit.toLocaleString()}</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-500 rounded-full transition-all"
-                    style={{ width: `${storeInfo.amount_limit > 0 ? Math.min((storeInfo.amount_used / storeInfo.amount_limit) * 100, 100) : 0}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Manage Listings Panel */}
         <div className="bg-card rounded-xl border">
           <div className="p-5 border-b">
             <h3 className="font-semibold">Manage Listings</h3>
@@ -210,6 +162,58 @@ function AutolisterContent() {
             )}
           </div>
         </div>
+
+        {/* Store Info Panel */}
+        {storeInfoLoading ? (
+          <div className="rounded-xl border bg-card p-5 space-y-3">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-64" />
+            <Skeleton className="h-2 w-full" />
+            <Skeleton className="h-2 w-full" />
+          </div>
+        ) : storeInfo && (
+          <div className="rounded-xl border bg-card p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm text-muted-foreground">eBay Store Subscription</span>
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-500/20 text-orange-400">
+                {storeInfo.subscription}
+              </span>
+              <span className="text-sm text-muted-foreground">{storeInfo.free_listings.toLocaleString()}/mo free listings</span>
+            </div>
+            <p className="text-sm font-medium mb-3">Monthly Selling Limits</p>
+            <p className="text-xs text-muted-foreground mb-4">
+              You've used {storeInfo.items_used.toLocaleString()} of {storeInfo.items_limit.toLocaleString()} items
+              and ${storeInfo.amount_used.toLocaleString()} of ${storeInfo.amount_limit.toLocaleString()} USD this month.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span>Items</span>
+                  <span>{storeInfo.items_used.toLocaleString()} / {storeInfo.items_limit.toLocaleString()}</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all"
+                    style={{ width: `${storeInfo.items_limit > 0 ? Math.min((storeInfo.items_used / storeInfo.items_limit) * 100, 100) : 0}%` }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span>Amount</span>
+                  <span>${storeInfo.amount_used.toLocaleString()} / ${storeInfo.amount_limit.toLocaleString()}</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all"
+                    style={{ width: `${storeInfo.amount_limit > 0 ? Math.min((storeInfo.amount_used / storeInfo.amount_limit) * 100, 100) : 0}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       </div>
     </DashboardLayout>
   );

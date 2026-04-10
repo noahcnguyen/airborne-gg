@@ -339,7 +339,7 @@ function DashboardContent() {
         </header>
 
         <main className="p-6">
-          {activeTab === "overview" && <OverviewTab stats={stats} />}
+          {activeTab === "overview" && <OverviewTab stats={stats} orders={orders} />}
           {activeTab === "orders" && <OrdersTab orders={orders} />}
           {activeTab === "autolister" && <AutolisterTab />}
           {activeTab === "stores" && <StoresTab storeData={storeData} loading={storeLoading} />}

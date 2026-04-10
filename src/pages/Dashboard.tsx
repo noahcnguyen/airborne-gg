@@ -15,6 +15,9 @@ interface Order {
   payout_estimate_cents: number;
   actual_amazon_total_cents: number;
   actual_profit_cents: number;
+  created_at?: string;
+  amazon_url?: string | null;
+  asin?: string | null;
 }
 
 interface Stats {
@@ -28,6 +31,53 @@ interface Stats {
 interface ProfitChartPoint {
   date: string;
   profit: number;
+}
+
+const SOLD_ORDER_STATES = [
+  "completed",
+  "submitted_to_zinc",
+  "awaiting_tba_conversion",
+  "tracking_pending_manual_carrier",
+];
+
+function buildStats(orders: Order[], activeListings: number): Stats {
+  const sold = orders.filter((order) => SOLD_ORDER_STATES.includes(order.state));
+
+  return {
+    total_profit: sold.reduce((sum, order) => sum + order.actual_profit_cents / 100, 0),
+    total_orders: orders.length,
+    completed_orders: sold.length,
+    pending_orders: orders.filter((order) => order.state === "submitted_to_zinc").length,
+    active_listings: activeListings,
+  };
+}
+
+async function enrichOrdersWithAmazonData(orders: Order[], userId: string) {
+  if (orders.length === 0 || orders.every((order) => order.asin || order.amazon_url)) {
+    return orders;
+  }
+
+  const orderIds = orders.map((order) => order.ebay_order_id).filter(Boolean);
+  if (orderIds.length === 0) {
+    return orders;
+  }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select("ebay_order_id, amazon_url, created_at")
+    .eq("user_id", userId)
+    .in("ebay_order_id", orderIds);
+
+  if (error || !data?.length) {
+    return orders;
+  }
+
+  const orderDataMap = new Map(data.map((order) => [order.ebay_order_id, order]));
+
+  return orders.map((order) => ({
+    ...order,
+    ...orderDataMap.get(order.ebay_order_id),
+  }));
 }
 
 function DashboardContent() {
@@ -54,29 +104,20 @@ function DashboardContent() {
         let edgeFunctionWorked = false;
         try {
           const res = await fetch(
-            'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data',
+            "https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data",
             {
               headers: {
-                'Authorization': `Bearer ${session.access_token}`,
-                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
+                "Content-Type": "application/json",
               },
             }
           );
           if (res.ok) {
             const data = await res.json();
             if (data.orders) {
-              setOrders(data.orders);
-              const allOrders = data.orders;
-              const sold = allOrders.filter((o: any) =>
-                ['completed', 'submitted_to_zinc', 'awaiting_tba_conversion', 'tracking_pending_manual_carrier'].includes(o.state)
-              );
-              setStats({
-                total_profit: sold.reduce((sum: number, o: any) => sum + (o.actual_profit_cents / 100), 0),
-                total_orders: allOrders.length,
-                completed_orders: sold.length,
-                pending_orders: allOrders.filter((o: any) => o.state === 'submitted_to_zinc').length,
-                active_listings: data.stats?.active_listings || 0,
-              });
+              const enrichedOrders = await enrichOrdersWithAmazonData(data.orders, session.user.id);
+              setOrders(enrichedOrders);
+              setStats(buildStats(enrichedOrders, data.stats?.active_listings || 0));
             } else if (data.stats) {
               setStats(data.stats);
             }
@@ -84,33 +125,22 @@ function DashboardContent() {
             edgeFunctionWorked = true;
           }
         } catch (err) {
-          console.error('Edge function failed:', err);
+          console.error("Edge function failed:", err);
         }
 
         if (!edgeFunctionWorked) {
           const { data: ordersData } = await supabase
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false })
+            .from("orders")
+            .select("*")
+            .order("created_at", { ascending: false })
             .limit(50);
           if (ordersData && ordersData.length > 0) {
             setOrders(ordersData);
-            const sold = ordersData.filter((o: any) =>
-              ['completed', 'submitted_to_zinc', 'awaiting_tba_conversion', 'tracking_pending_manual_carrier'].includes(o.state)
-            );
-            setStats({
-              total_profit: sold.reduce((sum: number, o: any) => sum + (o.actual_profit_cents / 100), 0),
-              total_orders: ordersData.length,
-              completed_orders: sold.length,
-              pending_orders: ordersData.filter((o: any) => o.state === 'submitted_to_zinc').length,
-              active_listings: 0,
-            });
+            setStats(buildStats(ordersData, 0));
           }
         }
-
-
       } catch (err) {
-        console.error('Dashboard fetch error:', err);
+        console.error("Dashboard fetch error:", err);
       }
     };
 

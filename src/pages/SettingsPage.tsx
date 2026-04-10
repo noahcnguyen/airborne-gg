@@ -436,6 +436,62 @@ function SettingsContent() {
             <Button onClick={handleSaveProfile} className="gradient-primary-bg text-primary-foreground rounded-md">Save Profile</Button>
           </div>
 
+          {/* Amazon Accounts */}
+          <div className="bg-card rounded-xl border p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-semibold text-lg">Amazon Profile(s)</h2>
+              <Dialog open={modalOpen} onOpenChange={o => { setModalOpen(o); if (!o) setEditAccountId(null); }}>
+                <DialogTrigger asChild>
+                  <Button className="gradient-primary-bg text-primary-foreground rounded-md gap-2" onClick={() => { setEditAccountId(null); setModalOpen(true); }}>
+                    <Plus className="h-4 w-4" /> Add Account
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl rounded-xl">
+                  <DialogHeader>
+                    <DialogTitle>{editAccountId ? 'Edit Amazon Account' : 'Add Amazon Account'}</DialogTitle>
+                  </DialogHeader>
+                  <AmazonAccountModal onSave={handleSaveAccount} editId={editAccountId || undefined} saving={saving} />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="bg-accent/50 border border-primary/20 rounded-lg p-3 mb-5 flex items-start gap-2">
+              <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-muted-foreground">All credentials are encrypted at rest. We use bank-level encryption to protect your data.</p>
+            </div>
+
+            {accounts.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No Amazon accounts added yet. Click "Add Account" to get started.</p>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {accounts.map(a => {
+                  const emailParts = a.email.split('@');
+                  const masked = emailParts[0].slice(0, 2) + '•••@' + (emailParts[1] || '');
+                  const acInitials = a.email.slice(0, 2).toUpperCase();
+                  return (
+                    <div key={a.id} className="group relative bg-surface-1 border rounded-lg px-4 py-3 cursor-pointer hover:border-primary/30 transition-colors"
+                      onDoubleClick={() => { setEditAccountId(a.id); setModalOpen(true); }}>
+                      <button onClick={() => handleRemoveAccount(a.id)}
+                        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X className="h-3 w-3" />
+                      </button>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-md gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">{acInitials}</div>
+                        <div>
+                          <p className="text-sm font-medium">{masked}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{a.hasTotp ? '🔐 TOTP' : '🔓 No TOTP'}</span>
+                            <span>•••• {a.cardLast4}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Connected Accounts */}
           <div className="bg-card rounded-xl border p-6">
             <h2 className="font-semibold text-lg mb-5">Connected Accounts</h2>
@@ -516,62 +572,6 @@ function SettingsContent() {
                 <p className="text-xs text-muted-foreground">Billing is managed through Stripe. You'll be redirected to a secure portal to update payment methods or cancel.</p>
               </div>
             </div>
-          </div>
-
-          {/* Amazon Accounts */}
-          <div className="bg-card rounded-xl border p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold text-lg">Amazon Profile(s)</h2>
-              <Dialog open={modalOpen} onOpenChange={o => { setModalOpen(o); if (!o) setEditAccountId(null); }}>
-                <DialogTrigger asChild>
-                  <Button className="gradient-primary-bg text-primary-foreground rounded-md gap-2" onClick={() => { setEditAccountId(null); setModalOpen(true); }}>
-                    <Plus className="h-4 w-4" /> Add Account
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl rounded-xl">
-                  <DialogHeader>
-                    <DialogTitle>{editAccountId ? 'Edit Amazon Account' : 'Add Amazon Account'}</DialogTitle>
-                  </DialogHeader>
-                  <AmazonAccountModal onSave={handleSaveAccount} editId={editAccountId || undefined} saving={saving} />
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="bg-accent/50 border border-primary/20 rounded-lg p-3 mb-5 flex items-start gap-2">
-              <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-muted-foreground">All credentials are encrypted at rest. We use bank-level encryption to protect your data.</p>
-            </div>
-
-            {accounts.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No Amazon accounts added yet. Click "Add Account" to get started.</p>
-            ) : (
-              <div className="flex flex-wrap gap-3">
-                {accounts.map(a => {
-                  const emailParts = a.email.split('@');
-                  const masked = emailParts[0].slice(0, 2) + '•••@' + (emailParts[1] || '');
-                  const acInitials = a.email.slice(0, 2).toUpperCase();
-                  return (
-                    <div key={a.id} className="group relative bg-surface-1 border rounded-lg px-4 py-3 cursor-pointer hover:border-primary/30 transition-colors"
-                      onDoubleClick={() => { setEditAccountId(a.id); setModalOpen(true); }}>
-                      <button onClick={() => handleRemoveAccount(a.id)}
-                        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <X className="h-3 w-3" />
-                      </button>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-md gradient-primary-bg flex items-center justify-center text-primary-foreground text-xs font-bold">{acInitials}</div>
-                        <div>
-                          <p className="text-sm font-medium">{masked}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{a.hasTotp ? '🔐 TOTP' : '🔓 No TOTP'}</span>
-                            <span>•••• {a.cardLast4}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </main>
       </div>

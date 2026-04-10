@@ -13,6 +13,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStoreData } from "@/hooks/useDashboardData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface StoreOption {
+  id: string;
+  ebay_username: string;
+}
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -22,7 +34,15 @@ const navItems = [
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
-export function DashboardLayout({ children, title }: { children: React.ReactNode; title: string }) {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  title: string;
+  stores?: StoreOption[];
+  selectedStoreId?: string;
+  onStoreChange?: (storeId: string) => void;
+}
+
+export function DashboardLayout({ children, title, stores, selectedStoreId, onStoreChange }: DashboardLayoutProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,9 +101,24 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b h-14 flex items-center justify-between px-6">
           <h1 className="text-lg font-semibold">{title}</h1>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
-              {storeData ? storeData.ebay_username : "No store connected"}
-            </div>
+            {stores && stores.length > 0 && onStoreChange ? (
+              <Select value={selectedStoreId} onValueChange={onStoreChange}>
+                <SelectTrigger className="w-48 h-8 text-xs">
+                  <SelectValue placeholder="Select store" />
+                </SelectTrigger>
+                <SelectContent>
+                  {stores.map((store) => (
+                    <SelectItem key={store.id} value={store.id}>
+                      {store.ebay_username || "eBay Store"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-surface-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
+                {storeData ? storeData.ebay_username : "No store connected"}
+              </div>
+            )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-md">
               <Bell className="h-4 w-4" />
             </Button>

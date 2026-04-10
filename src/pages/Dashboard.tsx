@@ -33,6 +33,13 @@ interface ProfitChartPoint {
   profit: number;
 }
 
+interface StoreOption {
+  id: string;
+  ebay_username: string;
+  connected_at: string;
+  is_active: boolean;
+}
+
 const SOLD_ORDER_STATES = [
   "completed",
   "submitted_to_zinc",
@@ -86,6 +93,31 @@ function DashboardContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats>({ total_profit: 0, total_orders: 0, completed_orders: 0, pending_orders: 0, active_listings: 0 });
   const [profitChart, setProfitChart] = useState<ProfitChartPoint[]>([]);
+  const [stores, setStores] = useState<StoreOption[]>([]);
+  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+
+  // Fetch connected stores on mount
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchStores = async () => {
+      const { data: storesData } = await supabase
+        .from("ebay_stores")
+        .select("id, ebay_username, connected_at, is_active")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .order("connected_at", { ascending: true });
+
+      if (storesData) {
+        setStores(storesData);
+        if (storesData.length > 0 && !selectedStoreId) {
+          setSelectedStoreId(storesData[0].id);
+        }
+      }
+    };
+
+    fetchStores();
+  }, [user]);
 
   useEffect(() => {
     if (searchParams.get("ebay") === "connected") {
@@ -95,7 +127,10 @@ function DashboardContent() {
     }
   }, [searchParams, setSearchParams]);
 
+  // Fetch dashboard data when selectedStoreId changes
   useEffect(() => {
+    if (!user || !selectedStoreId) return;
+
     const fetchData = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -104,7 +139,7 @@ function DashboardContent() {
         let edgeFunctionWorked = false;
         try {
           const res = await fetch(
-            "https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data",
+            `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data?store_id=${selectedStoreId}`,
             {
               headers: {
                 Authorization: `Bearer ${session.access_token}`,
@@ -132,6 +167,7 @@ function DashboardContent() {
           const { data: ordersData } = await supabase
             .from("orders")
             .select("*")
+            .eq("store_id", selectedStoreId)
             .order("created_at", { ascending: false })
             .limit(50);
           if (ordersData && ordersData.length > 0) {
@@ -147,10 +183,15 @@ function DashboardContent() {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, selectedStoreId]);
 
   return (
-    <DashboardLayout title="Overview">
+    <DashboardLayout
+      title="Overview"
+      stores={stores}
+      selectedStoreId={selectedStoreId}
+      onStoreChange={setSelectedStoreId}
+    >
       <OverviewTab stats={stats} orders={orders} profitChart={profitChart} />
     </DashboardLayout>
   );

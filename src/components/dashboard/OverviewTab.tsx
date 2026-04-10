@@ -112,7 +112,8 @@ function buildChartData(orders: OverviewOrder[], range: ChartRange, profitChart?
 }
 
 export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
-  const chartData = buildChartData(orders, profitChart);
+  const [chartRange, setChartRange] = useState<ChartRange>("30d");
+  const chartData = buildChartData(orders, chartRange, profitChart);
 
   const avgOrderValue =
     stats.completed_orders > 0
@@ -145,9 +146,21 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
         <div className="rounded-xl border bg-card p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Revenue & Profits</h2>
-            <span className="rounded-lg border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-              Last 4 weeks
-            </span>
+            <div className="flex items-center gap-1">
+              {chartRangeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setChartRange(opt.value)}
+                  className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                    chartRange === opt.value
+                      ? "bg-primary text-primary-foreground font-medium"
+                      : "border bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={340}>
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

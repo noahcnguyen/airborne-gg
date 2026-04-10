@@ -27,6 +27,7 @@ interface OverviewOrder {
   actual_amazon_total_cents: number;
   actual_profit_cents: number;
   created_at?: string;
+  amazon_url?: string;
 }
 
 type ChartRange = "today" | "7d" | "14d" | "30d" | "90d";

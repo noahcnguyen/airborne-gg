@@ -26,6 +26,27 @@ interface OverviewOrder {
   payout_estimate_cents: number;
   actual_amazon_total_cents: number;
   actual_profit_cents: number;
+  created_at?: string;
+}
+
+type ChartRange = "today" | "7d" | "14d" | "30d" | "90d";
+
+const chartRangeOptions: { value: ChartRange; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "7d", label: "7 days" },
+  { value: "14d", label: "14 days" },
+  { value: "30d", label: "30 days" },
+  { value: "90d", label: "90 days" },
+];
+
+function getRangeDays(range: ChartRange): number {
+  switch (range) {
+    case "today": return 1;
+    case "7d": return 7;
+    case "14d": return 14;
+    case "30d": return 30;
+    case "90d": return 90;
+  }
 }
 
 interface ProfitChartPoint {

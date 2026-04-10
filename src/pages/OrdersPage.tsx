@@ -42,7 +42,12 @@ function OrdersContent() {
                         order.state === 'awaiting_tba_conversion' ? 'bg-orange-100 text-orange-600' :
                         'bg-orange-100 text-orange-600'
                       }`}>
-                        {order.state}
+                        {order.state === 'completed' ? 'Fulfilled' :
+                         order.state === 'submitted_to_zinc' ? 'Processing' :
+                         order.state === 'zinc_failed' ? 'Failed' :
+                         order.state === 'tracking_pending_manual_carrier' ? 'Tracking' :
+                         order.state === 'awaiting_tba_conversion' ? 'Pending' :
+                         order.state}
                       </span>
                     </td>
                     <td className="py-3 px-4">{order.tracking_carrier || '—'}</td>

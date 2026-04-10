@@ -398,7 +398,7 @@ function SettingsContent() {
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-              <p className="text-xs text-muted-foreground">{planLabel}</p>
+              <p className="text-xs text-muted-foreground">{planLabel || <span className="opacity-0">Loading</span>}</p>
             </div>
           </div>
         </div>

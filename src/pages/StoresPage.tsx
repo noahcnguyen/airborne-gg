@@ -4,7 +4,7 @@ import { StoresTab } from "@/components/dashboard/StoresTab";
 import { useStoreData } from "@/hooks/useDashboardData";
 
 function StoresContent() {
-  const { stores, loading } = useStoreData();
+  const { stores, loading, refetchStores } = useStoreData();
 
   return (
     <DashboardLayout title="My Stores">

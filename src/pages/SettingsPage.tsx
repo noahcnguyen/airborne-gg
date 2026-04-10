@@ -104,7 +104,7 @@ function AmazonAccountModal({ onSave, editId, saving }: { onSave: (form: AmazonF
   if (loading) return <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>;
 
   return (
-    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40">
       <div className="bg-accent/50 border border-primary/20 rounded-lg p-3 flex items-start gap-2">
         <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-muted-foreground">Your credentials are encrypted and stored securely. We never share your data.</p>

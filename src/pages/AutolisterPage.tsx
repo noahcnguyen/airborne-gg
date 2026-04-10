@@ -57,10 +57,22 @@ function AutolisterContent() {
     const fetchStoreInfo = async () => {
       setStoreInfoLoading(true);
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        let accessToken = session?.access_token;
+
+        if (sessionError || !session) {
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (!refreshData.session) {
+            setStoreInfo(null);
+            setStoreInfoLoading(false);
+            return;
+          }
+          accessToken = refreshData.session.access_token;
+        }
+
         const res = await fetch(
-          `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/ebay-store-info?store_id=${selectedStoreId}`,
-          { headers: { Authorization: `Bearer ${session?.access_token}` } }
+          `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/ebay-store-info${selectedStoreId ? `?store_id=${selectedStoreId}` : ''}`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         const data = await res.json();
         console.log('Store info:', data);
@@ -178,18 +190,18 @@ function AutolisterContent() {
               <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-500/20 text-orange-400">
                 {storeInfo.subscription}
               </span>
-              <span className="text-sm text-muted-foreground">{storeInfo.free_listings.toLocaleString()}/mo free listings</span>
+              <span className="text-sm text-muted-foreground">{storeInfo.free_listings?.toLocaleString()}/mo free listings</span>
             </div>
             <p className="text-sm font-medium mb-3">Monthly Selling Limits</p>
             <p className="text-xs text-muted-foreground mb-4">
-              You've used {storeInfo.items_used.toLocaleString()} of {storeInfo.items_limit.toLocaleString()} items
-              and ${storeInfo.amount_used.toLocaleString()} of ${storeInfo.amount_limit.toLocaleString()} USD this month.
+              You've used {(storeInfo.items_used ?? 0).toLocaleString()} of {(storeInfo.items_limit ?? 0).toLocaleString()} items
+                  and ${(storeInfo.amount_used ?? 0).toLocaleString()} of ${(storeInfo.amount_limit ?? 0).toLocaleString()} USD this month.
             </p>
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span>Items</span>
-                  <span>{storeInfo.items_used.toLocaleString()} / {storeInfo.items_limit.toLocaleString()}</span>
+                  <span>{(storeInfo.items_used ?? 0).toLocaleString()} / {(storeInfo.items_limit ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
@@ -201,7 +213,7 @@ function AutolisterContent() {
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span>Amount</span>
-                  <span>${storeInfo.amount_used.toLocaleString()} / ${storeInfo.amount_limit.toLocaleString()}</span>
+                  <span>${(storeInfo.amount_used ?? 0).toLocaleString()} / ${(storeInfo.amount_limit ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div

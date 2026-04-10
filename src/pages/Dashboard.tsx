@@ -258,14 +258,47 @@ function DashboardContent() {
           if (ordersData && ordersData.length > 0) {
             setOrders(ordersData);
             const completed = ordersData.filter((o: any) => o.state === 'completed');
+            const sold = ordersData.filter((o: any) =>
+              ['completed', 'submitted_to_zinc', 'awaiting_tba_conversion', 'tracking_pending_manual_carrier'].includes(o.state)
+            );
             setStats({
               total_profit: completed.reduce((sum: number, o: any) => sum + (o.actual_profit_cents / 100), 0),
               total_orders: ordersData.length,
-              completed_orders: completed.length,
+              completed_orders: sold.length,
               pending_orders: ordersData.filter((o: any) => o.state === 'submitted_to_zinc').length,
               active_listings: 0,
             });
           }
+        }
+
+        // Fetch active eBay listing count
+        try {
+          const { data: ebayStore } = await supabase
+            .from('ebay_stores')
+            .select('access_token, access_token_expires_at')
+            .eq('user_id', session.user.id)
+            .eq('is_active', true)
+            .single();
+
+          if (ebayStore?.access_token) {
+            const ebayRes = await fetch(
+              'https://api.ebay.com/sell/inventory/v1/inventory_item?limit=1',
+              {
+                headers: {
+                  'Authorization': `Bearer ${ebayStore.access_token}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                }
+              }
+            );
+            if (ebayRes.ok) {
+              const ebayData = await ebayRes.json();
+              const count = ebayData.total || 0;
+              setStats(prev => ({ ...prev, active_listings: count }));
+            }
+          }
+        } catch (e) {
+          console.error('eBay listings fetch failed:', e);
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);

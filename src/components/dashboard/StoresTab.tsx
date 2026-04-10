@@ -144,13 +144,18 @@ export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) 
         ))}
       </div>
 
-      {availableSlots > 0 && (
+      {connectedCount < storeLimit ? (
         <Button
           className="gradient-primary-bg text-primary-foreground rounded-md gap-2"
           onClick={handleConnectStore}
         >
           <Plus className="h-4 w-4" /> Connect Store
         </Button>
+      ) : (
+        <div className="bg-accent/50 border border-dashed rounded-xl p-5 flex items-center justify-center gap-3 text-muted-foreground">
+          <ArrowUpCircle className="h-4 w-4" />
+          <span className="text-sm">Upgrade your plan to add more stores</span>
+        </div>
       )}
     </div>
   );

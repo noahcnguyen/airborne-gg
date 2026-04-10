@@ -66,7 +66,7 @@ export interface StoreData {
 
 export function useStoreData() {
   const { user } = useAuth();
-  const [storeData, setStoreData] = useState<StoreData | null>(null);
+  const [stores, setStores] = useState<StoreData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,16 +75,15 @@ export function useStoreData() {
       return;
     }
 
-    const fetchStore = async () => {
+    const fetchStores = async () => {
       try {
         const { data } = await supabase
           .from("ebay_stores")
           .select("ebay_username, connected_at, access_token_expires_at, is_active")
           .eq("user_id", user.id)
-          .eq("is_active", true)
-          .maybeSingle();
+          .eq("is_active", true);
 
-        setStoreData(data);
+        setStores(data || []);
       } catch (error) {
         console.error("Failed to fetch store data:", error);
       } finally {
@@ -92,8 +91,9 @@ export function useStoreData() {
       }
     };
 
-    fetchStore();
+    fetchStores();
   }, [user]);
 
-  return { storeData, loading };
+  // Backwards compat: expose first store as storeData
+  return { stores, storeData: stores[0] || null, loading };
 }

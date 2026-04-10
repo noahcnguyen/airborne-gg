@@ -82,8 +82,10 @@ function buildChartData(orders: OverviewOrder[], range: ChartRange) {
     const day = order.created_at ? order.created_at.split("T")[0] : "unknown";
     if (!chartByDay[day]) chartByDay[day] = { date: day, revenue: 0, profit: 0, cost: 0 };
     chartByDay[day].revenue += (order.payout_estimate_cents || 0) / 100;
-    chartByDay[day].profit += (order.actual_profit_cents || 0) / 100;
-    chartByDay[day].cost += (order.actual_amazon_total_cents || 0) / 100;
+    if (order.actual_amazon_total_cents > 0) {
+      chartByDay[day].cost += (order.actual_amazon_total_cents || 0) / 100;
+      chartByDay[day].profit += (order.actual_profit_cents || 0) / 100;
+    }
   });
 
   const sorted = Object.values(chartByDay).sort((a, b) => a.date.localeCompare(b.date));

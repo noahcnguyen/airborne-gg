@@ -67,55 +67,42 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-function buildChartData(orders: OverviewOrder[], range: ChartRange, profitChart?: ProfitChartPoint[]) {
+function buildChartData(orders: OverviewOrder[], range: ChartRange) {
   const days = getRangeDays(range);
   const now = new Date();
   const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-  // Filter orders by date range
   const filtered = orders.filter((o) => {
     if (!o.created_at) return true;
     return new Date(o.created_at) >= cutoff;
   });
 
-  // Use profitChart from API if available, filtered by range
-  if (profitChart && profitChart.length > 0) {
-    const filteredChart = profitChart.filter((p) => new Date(p.date) >= cutoff);
-    if (filteredChart.length > 0) {
-      return filteredChart.map((p) => ({
-        day: new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        Revenue: 0,
-        Profit: p.profit / 100,
-      }));
-    }
+  const chartByDay: Record<string, { date: string; revenue: number; profit: number; cost: number }> = {};
+  filtered.forEach((order) => {
+    const day = order.created_at ? order.created_at.split("T")[0] : "unknown";
+    if (!chartByDay[day]) chartByDay[day] = { date: day, revenue: 0, profit: 0, cost: 0 };
+    chartByDay[day].revenue += (order.payout_estimate_cents || 0) / 100;
+    chartByDay[day].profit += (order.actual_profit_cents || 0) / 100;
+    chartByDay[day].cost += (order.actual_amazon_total_cents || 0) / 100;
+  });
+
+  const sorted = Object.values(chartByDay).sort((a, b) => a.date.localeCompare(b.date));
+
+  if (sorted.length === 0) {
+    return [{ day: "No data", Revenue: 0, Profit: 0, Cost: 0 }];
   }
 
-  // Fallback: group filtered orders by day
-  const dayMap = new Map<string, { revenue: number; profit: number }>();
-  for (const o of filtered) {
-    const dateKey = o.created_at
-      ? new Date(o.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-      : "Unknown";
-    const existing = dayMap.get(dateKey) || { revenue: 0, profit: 0 };
-    existing.revenue += o.payout_estimate_cents / 100;
-    existing.profit += o.actual_profit_cents / 100;
-    dayMap.set(dateKey, existing);
-  }
-
-  if (dayMap.size === 0) {
-    return [{ day: "No data", Revenue: 0, Profit: 0 }];
-  }
-
-  return Array.from(dayMap.entries()).map(([day, vals]) => ({
-    day,
-    Revenue: vals.revenue,
-    Profit: vals.profit,
+  return sorted.map((d) => ({
+    day: new Date(d.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    Revenue: d.revenue,
+    Profit: d.profit,
+    Cost: d.cost,
   }));
 }
 
 export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
   const [chartRange, setChartRange] = useState<ChartRange>("30d");
-  const chartData = buildChartData(orders, chartRange, profitChart);
+  const chartData = buildChartData(orders, chartRange);
 
   const avgOrderValue =
     stats.completed_orders > 0
@@ -167,12 +154,16 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
                   <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -200,7 +191,7 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
               <Area
                 type="monotone"
                 dataKey="Revenue"
-                stroke="hsl(var(--primary))"
+                stroke="#3b82f6"
                 strokeWidth={2}
                 fill="url(#colorRevenue)"
               />
@@ -210,6 +201,13 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
                 stroke="#22c55e"
                 strokeWidth={2}
                 fill="url(#colorProfit)"
+              />
+              <Area
+                type="monotone"
+                dataKey="Cost"
+                stroke="#ef4444"
+                strokeWidth={2}
+                fill="url(#colorCost)"
               />
               <Legend
                 verticalAlign="bottom"

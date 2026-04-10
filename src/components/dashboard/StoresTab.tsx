@@ -2,18 +2,46 @@ import { Lock, Plus, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { StoreData } from "@/hooks/useDashboardData";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface StoresTabProps {
   stores: StoreData[];
   loading: boolean;
+  onStoresChanged?: () => void;
 }
 
-export function StoresTab({ stores, loading }: StoresTabProps) {
+export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) {
   const { user } = useAuth();
 
   const maxSlots = 2;
   const connectedCount = stores.length;
   const availableSlots = Math.max(0, maxSlots - connectedCount);
+
+  const disconnectStore = async (storeId: string) => {
+    const { error } = await supabase
+      .from("ebay_stores")
+      .delete()
+      .eq("id", storeId);
+
+    if (error) {
+      toast.error("Failed to remove store");
+    } else {
+      toast.success("Store removed successfully");
+      onStoresChanged?.();
+    }
+  };
 
   const handleConnectStore = () => {
     const userId = user?.id;
@@ -62,9 +90,33 @@ export function StoresTab({ stores, loading }: StoresTabProps) {
                   </p>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/15 text-green-500">
-                Connected
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/15 text-green-500">
+                  Connected
+                </span>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">Remove</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove store?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove this eBay store and stop all order fulfillment for it. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => store.id && disconnectStore(store.id)}
+                      >
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
         ))}

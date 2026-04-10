@@ -150,7 +150,7 @@ function DashboardContent() {
           if (res.ok) {
             const data = await res.json();
             if (data.orders) {
-              const enrichedOrders = await enrichOrdersWithAmazonData(data.orders, session.user.id);
+              const enrichedOrders = await enrichOrdersWithAmazonData(data.orders, userId);
               setOrders(enrichedOrders);
               setStats(buildStats(enrichedOrders, data.stats?.active_listings || 0));
             } else if (data.stats) {
@@ -168,7 +168,7 @@ function DashboardContent() {
           const { data: ordersData } = await supabase
             .from("orders")
             .select("*")
-            .eq("store_id", selectedStoreId)
+            .eq("ebay_store_id", selectedStoreId)
             .order("created_at", { ascending: false })
             .limit(50);
           if (ordersData && ordersData.length > 0) {

@@ -1,15 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+
+interface StoreOption {
+  id: string;
+  ebay_username: string;
+}
 
 function AutolisterContent() {
+  const { user } = useAuth();
+  const [stores, setStores] = useState<StoreOption[]>([]);
+  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
   const [listingTab, setListingTab] = useState<"products" | "leads" | "autopilot">("products");
   const [asinInput, setAsinInput] = useState("");
   const [leadsCount, setLeadsCount] = useState("");
   const [autopilotCount, setAutopilotCount] = useState("300");
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchStores = async () => {
+      const { data } = await supabase
+        .from("ebay_stores")
+        .select("id, ebay_username, connected_at, is_active")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .order("connected_at", { ascending: true });
+      if (data) {
+        setStores(data);
+        if (data.length > 0 && !selectedStoreId) {
+          setSelectedStoreId(data[0].id);
+        }
+      }
+    };
+    fetchStores();
+  }, [user]);
 
   const listingTabs = [
     { id: "products" as const, label: "List My Products" },
@@ -18,7 +47,12 @@ function AutolisterContent() {
   ];
 
   return (
-    <DashboardLayout title="Autolister">
+    <DashboardLayout
+      title="Autolister"
+      stores={stores}
+      selectedStoreId={selectedStoreId}
+      onStoreChange={setSelectedStoreId}
+    >
       <div className="space-y-6">
         <div className="bg-card rounded-xl border">
           <div className="p-5 border-b">

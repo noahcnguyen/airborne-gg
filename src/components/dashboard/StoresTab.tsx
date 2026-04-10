@@ -1,4 +1,4 @@
-import { Lock, Plus, Store } from "lucide-react";
+import { Lock, Plus, Store, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { StoreData } from "@/hooks/useDashboardData";
@@ -96,7 +96,9 @@ export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) 
                 </span>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">Remove</Button>
+                    <button className="w-8 h-8 rounded-full flex items-center justify-center bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+                      <X className="h-4 w-4" />
+                    </button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>

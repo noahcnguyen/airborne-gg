@@ -13,17 +13,14 @@ interface Order {
 }
 
 export function useDashboardOrders(storeId?: string) {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !session?.access_token) return;
 
     const fetchOrders = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-
         let fetched = false;
         try {
           const url = storeId
@@ -51,7 +48,7 @@ export function useDashboardOrders(storeId?: string) {
             .order('created_at', { ascending: false })
             .limit(50);
           if (storeId) {
-            query = query.eq('store_id', storeId);
+            query = query.eq('ebay_store_id', storeId);
           }
           const { data } = await query;
           if (data) setOrders(data);
@@ -64,7 +61,7 @@ export function useDashboardOrders(storeId?: string) {
     fetchOrders();
     const interval = setInterval(fetchOrders, 60000);
     return () => clearInterval(interval);
-  }, [user, storeId]);
+  }, [user, session?.access_token, storeId]);
 
   return { orders };
 }

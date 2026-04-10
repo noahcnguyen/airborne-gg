@@ -214,7 +214,6 @@ function AutolisterContent() {
           </div>
         )}
       </div>
-      </div>
     </DashboardLayout>
   );
 }

@@ -526,7 +526,7 @@ function SettingsContent() {
                     <Plus className="h-4 w-4" /> Add Account
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md rounded-xl">
+                <DialogContent className="max-w-lg rounded-xl">
                   <DialogHeader>
                     <DialogTitle>{editAccountId ? 'Edit Amazon Account' : 'Add Amazon Account'}</DialogTitle>
                   </DialogHeader>

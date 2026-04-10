@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { useDashboardOrders } from "@/hooks/useDashboardOrders";
+import { useStores } from "@/hooks/useStores";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
-
-interface StoreOption {
-  id: string;
-  ebay_username: string;
-}
 
 function getTrackingUrl(carrier: string, trackingNumber: string): string | null {
   if (!trackingNumber) return null;
@@ -20,30 +16,47 @@ function getTrackingUrl(carrier: string, trackingNumber: string): string | null 
   return null;
 }
 
+async function fetchOrders(storeId: string, accessToken: string) {
+  try {
+    const res = await fetch(
+      `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data?store_id=${storeId}`,
+      { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.orders) return data.orders;
+    }
+  } catch {}
+
+  const { data } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("ebay_store_id", storeId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  return data || [];
+}
+
 function OrdersContent() {
-  const { user } = useAuth();
-  const [stores, setStores] = useState<StoreOption[]>([]);
+  const { session } = useAuth();
+  const { data: stores = [] } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
-  const { orders } = useDashboardOrders(selectedStoreId || undefined);
 
   useEffect(() => {
-    if (!user) return;
-    const fetchStores = async () => {
-      const { data } = await supabase
-        .from("ebay_stores")
-        .select("id, ebay_username, connected_at, is_active")
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .order("connected_at", { ascending: true });
-      if (data) {
-        setStores(data);
-        if (data.length > 0 && !selectedStoreId) {
-          setSelectedStoreId(data[0].id);
-        }
-      }
-    };
-    fetchStores();
-  }, [user]);
+    if (stores.length > 0 && !selectedStoreId) {
+      setSelectedStoreId(stores[0].id);
+    }
+  }, [stores, selectedStoreId]);
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ["orders", selectedStoreId],
+    queryFn: () => fetchOrders(selectedStoreId, session!.access_token),
+    enabled: !!selectedStoreId && !!session?.access_token,
+    staleTime: 60000,
+    gcTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchInterval: 60000,
+  });
 
   return (
     <DashboardLayout
@@ -101,17 +114,10 @@ function OrdersContent() {
                       <td className="py-3 px-4 font-mono text-xs">
                         {order.tracking_number ? (
                           trackingUrl ? (
-                            <a
-                              href={trackingUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline"
-                            >
+                            <a href={trackingUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                               {order.tracking_number}
                             </a>
-                          ) : (
-                            order.tracking_number
-                          )
+                          ) : order.tracking_number
                         ) : '—'}
                       </td>
                       <td className="py-3 px-4 text-right">${(order.payout_estimate_cents / 100).toFixed(2)}</td>

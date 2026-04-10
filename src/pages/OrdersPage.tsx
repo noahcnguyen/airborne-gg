@@ -2,6 +2,16 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useDashboardOrders } from "@/hooks/useDashboardOrders";
 
+function getTrackingUrl(carrier: string, trackingNumber: string): string | null {
+  if (!trackingNumber) return null;
+  const c = carrier?.toLowerCase() || "";
+  if (c === "ups") return `https://www.ups.com/track?tracknum=${trackingNumber}&loc=en_US&requester=QUIC/trackdetails`;
+  if (c === "usps") return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${trackingNumber}`;
+  if (c === "fedex") return `https://www.fedex.com/wtrk/track/?trknbr=${trackingNumber}`;
+  if (c === "zinc") return `https://tracking.link/tracking?tracking_id=${trackingNumber}`;
+  return null;
+}
+
 function OrdersContent() {
   const { orders } = useDashboardOrders();
 
@@ -30,35 +40,53 @@ function OrdersContent() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order: any) => (
-                  <tr key={order.ebay_order_id} className="border-b hover:bg-muted/50">
-                    <td className="py-3 px-4 font-mono text-xs">{order.ebay_order_id}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        order.state === 'completed' ? 'bg-emerald-100 text-emerald-600' :
-                        order.state === 'submitted_to_zinc' ? 'bg-purple-100 text-purple-600' :
-                        order.state === 'zinc_failed' ? 'bg-red-100 text-red-600' :
-                        order.state === 'tracking_pending_manual_carrier' ? 'bg-blue-100 text-blue-600' :
-                        order.state === 'awaiting_tba_conversion' ? 'bg-orange-100 text-orange-600' :
-                        'bg-orange-100 text-orange-600'
-                      }`}>
-                        {order.state === 'completed' ? 'Fulfilled' :
-                         order.state === 'submitted_to_zinc' ? 'Processing' :
-                         order.state === 'zinc_failed' ? 'Failed' :
-                         order.state === 'tracking_pending_manual_carrier' ? 'Tracking' :
-                         order.state === 'awaiting_tba_conversion' ? 'Pending' :
-                         order.state}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">{order.tracking_carrier || '—'}</td>
-                    <td className="py-3 px-4 font-mono text-xs">{order.tracking_number || '—'}</td>
-                    <td className="py-3 px-4 text-right">${(order.payout_estimate_cents / 100).toFixed(2)}</td>
-                    <td className="py-3 px-4 text-right">${(order.actual_amazon_total_cents / 100).toFixed(2)}</td>
-                    <td className={`py-3 px-4 text-right font-medium ${order.actual_profit_cents > 0 ? 'text-green-600' : order.actual_profit_cents < 0 ? 'text-red-600' : ''}`}>
-                      ${(order.actual_profit_cents / 100).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
+                {orders.map((order: any) => {
+                  const trackingUrl = getTrackingUrl(order.tracking_carrier, order.tracking_number);
+                  return (
+                    <tr key={order.ebay_order_id} className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-mono text-xs">{order.ebay_order_id}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          order.state === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+                          order.state === 'submitted_to_zinc' ? 'bg-purple-100 text-purple-600' :
+                          order.state === 'zinc_failed' ? 'bg-red-100 text-red-600' :
+                          order.state === 'tracking_pending_manual_carrier' ? 'bg-blue-100 text-blue-600' :
+                          order.state === 'awaiting_tba_conversion' ? 'bg-orange-100 text-orange-600' :
+                          'bg-orange-100 text-orange-600'
+                        }`}>
+                          {order.state === 'completed' ? 'Fulfilled' :
+                           order.state === 'submitted_to_zinc' ? 'Processing' :
+                           order.state === 'zinc_failed' ? 'Failed' :
+                           order.state === 'tracking_pending_manual_carrier' ? 'Tracking' :
+                           order.state === 'awaiting_tba_conversion' ? 'Pending' :
+                           order.state}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">{order.tracking_carrier || '—'}</td>
+                      <td className="py-3 px-4 font-mono text-xs">
+                        {order.tracking_number ? (
+                          trackingUrl ? (
+                            <a
+                              href={trackingUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline"
+                            >
+                              {order.tracking_number}
+                            </a>
+                          ) : (
+                            order.tracking_number
+                          )
+                        ) : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-right">${(order.payout_estimate_cents / 100).toFixed(2)}</td>
+                      <td className="py-3 px-4 text-right">${(order.actual_amazon_total_cents / 100).toFixed(2)}</td>
+                      <td className={`py-3 px-4 text-right font-medium ${order.actual_profit_cents > 0 ? 'text-green-600' : order.actual_profit_cents < 0 ? 'text-red-600' : ''}`}>
+                        ${(order.actual_profit_cents / 100).toFixed(2)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -31,6 +31,7 @@ export function StoresTab({ stores, loading }: StoresTabProps) {
       redirect_uri: "Noh_Ngyen-NohNgyen-Airbor-tohbcuscg",
       scope: scopes,
       state: userId || "",
+      prompt: "login",
     });
 
     window.location.href = `https://auth.ebay.com/oauth2/authorize?${params.toString()}`;

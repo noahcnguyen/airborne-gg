@@ -27,6 +27,7 @@ interface OverviewOrder {
   actual_amazon_total_cents: number;
   actual_profit_cents: number;
   created_at?: string;
+  amazon_url?: string;
 }
 
 type ChartRange = "today" | "7d" | "14d" | "30d" | "90d";
@@ -303,14 +304,24 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="text-left p-4 font-medium">Order ID</th>
+                  <th className="text-left p-4 font-medium">ASIN</th>
                   <th className="text-left p-4 font-medium">Status</th>
-                  <th className="text-left p-4 font-medium">Earnings</th>
-                  <th className="text-left p-4 font-medium">Cost</th>
                   <th className="text-left p-4 font-medium">Profit</th>
+                  <th className="text-left p-4 font-medium">Time</th>
                 </tr>
               </thead>
               <tbody>
                 {recentOrders.map((order) => {
+                  const statusLabel =
+                    order.state === "completed"
+                      ? "Fulfilled"
+                      : order.state === "submitted_to_zinc"
+                        ? "Processing"
+                        : order.state === "zinc_failed"
+                          ? "Failed"
+                          : order.state === "tracking_pending_manual_carrier"
+                            ? "Tracking"
+                            : "Pending";
                   const statusColor =
                     order.state === "completed"
                       ? "bg-green-500/15 text-green-500"
@@ -318,20 +329,32 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
                         ? "bg-blue-500/15 text-blue-500"
                         : order.state === "zinc_failed"
                           ? "bg-red-500/15 text-red-500"
-                          : "bg-yellow-500/15 text-yellow-500";
+                          : order.state === "tracking_pending_manual_carrier"
+                            ? "bg-cyan-500/15 text-cyan-500"
+                            : "bg-yellow-500/15 text-yellow-500";
+
+                  // Extract ASIN from amazon_url
+                  const asinMatch = order.amazon_url?.match(/\/dp\/([A-Z0-9]+)/);
+                  const asin = asinMatch ? asinMatch[1] : "—";
+
+                  // Time ago
+                  const timeAgo = order.created_at
+                    ? formatTimeAgo(new Date(order.created_at))
+                    : "—";
+
                   return (
                     <tr key={order.ebay_order_id} className="border-b last:border-0">
-                      <td className="p-4 font-mono text-xs">{order.ebay_order_id}</td>
+                      <td className="p-4 font-mono text-xs text-primary">{order.ebay_order_id}</td>
+                      <td className="p-4 font-mono text-xs text-muted-foreground">{asin}</td>
                       <td className="p-4">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
-                          {order.state}
+                          {statusLabel}
                         </span>
                       </td>
-                      <td className="p-4">{currencyFormatter.format(order.payout_estimate_cents / 100)}</td>
-                      <td className="p-4">{currencyFormatter.format(order.actual_amazon_total_cents / 100)}</td>
                       <td className={`p-4 font-semibold ${order.actual_profit_cents > 0 ? 'text-green-500' : order.actual_profit_cents < 0 ? 'text-red-500' : ''}`}>
                         {currencyFormatter.format(order.actual_profit_cents / 100)}
                       </td>
+                      <td className="p-4 text-muted-foreground">{timeAgo}</td>
                     </tr>
                   );
                 })}
@@ -347,4 +370,16 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
       </div>
     </div>
   );
+}
+
+function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHrs = Math.floor(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  const diffDays = Math.floor(diffHrs / 24);
+  return `${diffDays}d ago`;
 }

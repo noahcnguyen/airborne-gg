@@ -184,7 +184,7 @@ function DashboardContent() {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, [user, selectedStoreId]);
+  }, [user, selectedStoreId, session?.access_token]);
 
   return (
     <DashboardLayout

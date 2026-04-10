@@ -281,7 +281,7 @@ export function OverviewTab({ stats, orders, profitChart }: OverviewTabProps) {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total Profit</span>
                 <span className="text-sm font-medium">
-                  {currencyFormatter.format(stats.total_profit / 100)}
+                  {currencyFormatter.format(stats.total_profit)}
                 </span>
               </div>
               <div className="flex items-center justify-between">

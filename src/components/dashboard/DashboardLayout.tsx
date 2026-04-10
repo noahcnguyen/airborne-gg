@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStoreData } from "@/hooks/useDashboardData";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import {
   Select,
   SelectContent,
@@ -47,6 +48,7 @@ export function DashboardLayout({ children, title, stores, selectedStoreId, onSt
   const navigate = useNavigate();
   const location = useLocation();
   const { storeData } = useStoreData();
+  const { planLabel } = useUserPlan();
 
   const handleSignOut = async () => {
     await signOut();
@@ -91,7 +93,7 @@ export function DashboardLayout({ children, title, stores, selectedStoreId, onSt
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{userName}</p>
-              <p className="text-xs text-muted-foreground">Advanced Plan</p>
+              <p className="text-xs text-muted-foreground">{planLabel}</p>
             </div>
           </div>
         </div>

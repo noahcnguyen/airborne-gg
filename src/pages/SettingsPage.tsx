@@ -9,6 +9,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { useUserPlan } from '@/hooks/useUserPlan';
 
 interface AmazonAccount {
   id: string;
@@ -396,7 +397,7 @@ function SettingsContent() {
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-              <p className="text-xs text-muted-foreground">Advanced Plan</p>
+              <p className="text-xs text-muted-foreground">{planLabel}</p>
             </div>
           </div>
         </div>
@@ -492,7 +493,7 @@ function SettingsContent() {
               <div className="flex-1 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold text-base">Advanced Plan</p>
+                    <p className="font-semibold text-base">{planLabel}</p>
                     <p className="text-sm text-muted-foreground">$49.99/month</p>
                   </div>
                   <span className="px-3 py-1 rounded-full bg-success/15 text-success text-xs font-medium">Active</span>

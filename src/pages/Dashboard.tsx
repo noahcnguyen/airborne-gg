@@ -157,6 +157,7 @@ function DashboardContent() {
               setStats(data.stats);
             }
             if (data.profitChart) setProfitChart(data.profitChart);
+            if (data.stores) setStores(data.stores);
             edgeFunctionWorked = true;
           }
         } catch (err) {

@@ -225,7 +225,10 @@ function SettingsContent() {
 
   const displayName = displayNameField || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.slice(0, 2).toUpperCase();
-  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
+  const rawAvatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
+  const avatarUrl = rawAvatarUrl?.includes("cdn.discordapp.com") && rawAvatarUrl.match(/\/a_[a-f0-9]+\./)
+    ? rawAvatarUrl.replace(/\.(png|webp|jpg)(\?|$)/, ".gif$2")
+    : rawAvatarUrl;
   const discordIdentity = user?.identities?.find(i => i.provider === 'discord');
 
   // Load profile and accounts from Supabase

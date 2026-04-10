@@ -142,7 +142,7 @@ function DashboardContent() {
             `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/dashboard-data?store_id=${selectedStoreId}`,
             {
               headers: {
-                Authorization: `Bearer ${session.access_token}`,
+                Authorization: `Bearer ${accessToken}`,
                 "Content-Type": "application/json",
               },
             }

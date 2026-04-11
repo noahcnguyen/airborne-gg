@@ -102,28 +102,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Call eBay Trading API - GetMyeBaySelling for selling limits
-    const xmlBody = `<?xml version="1.0" encoding="utf-8"?>
-<GetUserRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+    // Get remaining monthly selling limits from Trading API summary
+    const sellingSummaryXml = `<?xml version="1.0" encoding="utf-8"?>
+<GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
   <RequesterCredentials>
     <eBayAuthToken>${storeData.access_token}</eBayAuthToken>
   </RequesterCredentials>
-  <DetailLevel>ReturnAll</DetailLevel>
-</GetUserRequest>`;
+  <Summary>
+    <Include>true</Include>
+  </Summary>
+</GetMyeBaySellingRequest>`;
 
-    const ebayRes = await fetch("https://api.ebay.com/ws/api.dll", {
+    const sellingSummaryRes = await fetch("https://api.ebay.com/ws/api.dll", {
       method: "POST",
       headers: {
         "X-EBAY-API-SITEID": "0",
         "X-EBAY-API-COMPATIBILITY-LEVEL": "967",
-        "X-EBAY-API-CALL-NAME": "GetUser",
+        "X-EBAY-API-CALL-NAME": "GetMyeBaySelling",
         "X-EBAY-API-IAF-TOKEN": storeData.access_token,
         "Content-Type": "text/xml",
       },
-      body: xmlBody,
+      body: sellingSummaryXml,
     });
 
-    const ebayText = await ebayRes.text();
+    const sellingSummaryText = await sellingSummaryRes.text();
 
     // Parse XML response for selling limits and store subscription
     const getTag = (xml: string, tag: string): string => {
@@ -131,9 +133,9 @@ Deno.serve(async (req) => {
       return match ? match[1] : "";
     };
 
-    // Extract SellerInfo selling limits
-    const sellerInfoMatch = ebayText.match(/<SellerInfo>([\s\S]*?)<\/SellerInfo>/);
-    const sellerInfo = sellerInfoMatch ? sellerInfoMatch[1] : "";
+    // Extract Trading API summary limits
+    const sellingSummaryMatch = sellingSummaryText.match(/<Summary>([\s\S]*?)<\/Summary>/);
+    const sellingSummary = sellingSummaryMatch ? sellingSummaryMatch[1] : "";
 
     // Get selling limits from the REST API
     const limitsRes = await fetch("https://apiz.ebay.com/sell/account/v1/privilege", {
@@ -166,16 +168,11 @@ Deno.serve(async (req) => {
       ["amountLimit"],
     ]);
 
-    const itemsLimitFromXml = asNumber(getTag(sellerInfo, "QuantityLimitRemaining"))
-      ?? asNumber(getTag(sellerInfo, "QuantityLimit"))
-      ?? 0;
+    const itemsRemainingFromXml = asNumber(getTag(sellingSummary, "QuantityLimitRemaining"));
+    const amountRemainingFromXml = asNumber(getTag(sellingSummary, "AmountLimitRemaining"));
 
-    const amountLimitFromXml = asNumber(getTag(sellerInfo, "AmountLimitRemaining"))
-      ?? asNumber(getTag(sellerInfo, "AmountLimit"))
-      ?? 0;
-
-    const itemsLimit = itemsLimitFromRest || itemsLimitFromXml;
-    const amountLimit = amountLimitFromRest || amountLimitFromXml;
+    const itemsLimit = itemsLimitFromRest || itemsRemainingFromXml || 0;
+    const amountLimit = amountLimitFromRest || amountRemainingFromXml || 0;
 
     // Try to get store subscription info
     let subscription = "No Store";
@@ -224,11 +221,20 @@ Deno.serve(async (req) => {
       },
     });
 
-    let itemsUsed = 0;
+    let itemsUsed = itemsLimit > 0 && itemsRemainingFromXml !== null
+      ? Math.max(itemsLimit - itemsRemainingFromXml, 0)
+      : 0;
+
     if (activeRes.ok) {
       const activeData = await activeRes.json();
-      itemsUsed = activeData?.total || 0;
+      if (itemsUsed === 0) {
+        itemsUsed = activeData?.total || 0;
+      }
     }
+
+    const amountUsed = amountLimit > 0 && amountRemainingFromXml !== null
+      ? Math.max(amountLimit - amountRemainingFromXml, 0)
+      : 0;
 
     return new Response(JSON.stringify({
       subscription,
@@ -236,7 +242,7 @@ Deno.serve(async (req) => {
       items_limit: itemsLimit,
       items_used: itemsUsed,
       amount_limit: amountLimit,
-      amount_used: 0, // eBay doesn't expose amount used directly; can be computed from orders
+      amount_used: amountUsed,
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

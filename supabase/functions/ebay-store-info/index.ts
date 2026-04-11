@@ -111,22 +111,11 @@ Deno.serve(async (req) => {
     let limitsData: Record<string, unknown> = {};
     if (limitsRes.ok) {
       limitsData = await limitsRes.json();
+      console.log("eBay privilege API response:", JSON.stringify(limitsData));
     } else {
-      console.error("eBay privilege API error:", limitsRes.status, await limitsRes.text());
+      const errText = await limitsRes.text();
+      console.error("eBay privilege API error:", limitsRes.status, errText);
     }
-
-    // Extract selling limits
-    const sellingLimit = (limitsData as { sellingLimit?: { amount?: { value?: number }; quantity?: number } })?.sellingLimit || {};
-    const amountLimit = sellingLimit?.amount?.value || 0;
-    const itemsLimit = sellingLimit?.quantity || 0;
-
-    // Get current usage from sell/account API
-    const usageRes = await fetch("https://apiz.ebay.com/sell/account/v1/privilege", {
-      headers: {
-        Authorization: `Bearer ${storeData.access_token}`,
-        Accept: "application/json",
-      },
-    });
 
     // Try to get store subscription info
     let subscription = "No Store";

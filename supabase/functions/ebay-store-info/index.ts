@@ -5,6 +5,48 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+type JsonRecord = Record<string, unknown>;
+
+const asRecord = (value: unknown): JsonRecord | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as JsonRecord)
+    : null;
+
+const asNumber = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const normalized = value.replace(/,/g, "").trim();
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const getNestedValue = (source: unknown, path: string[]): unknown => {
+  let current: unknown = source;
+
+  for (const key of path) {
+    const record = asRecord(current);
+    if (!record || !(key in record)) {
+      return null;
+    }
+
+    current = record[key];
+  }
+
+  return current;
+};
+
+const getFirstNumber = (source: unknown, paths: string[][]): number => {
+  for (const path of paths) {
+    const value = asNumber(getNestedValue(source, path));
+    if (value !== null) return value;
+  }
+
+  return 0;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -93,13 +135,6 @@ Deno.serve(async (req) => {
     const sellerInfoMatch = ebayText.match(/<SellerInfo>([\s\S]*?)<\/SellerInfo>/);
     const sellerInfo = sellerInfoMatch ? sellerInfoMatch[1] : "";
 
-    // Extract store subscription level
-    const storeMatch = ebayText.match(/<StoreOwner>([^<]*)<\/StoreOwner>/);
-    const isStoreOwner = storeMatch ? storeMatch[1] === "true" : false;
-
-    const subscriptionMatch = ebayText.match(/<StoreSite>([^<]*)<\/StoreSite>/) ||
-                               ebayText.match(/<SubscriptionLevel>([^<]*)<\/SubscriptionLevel>/);
-
     // Get selling limits from the REST API
     const limitsRes = await fetch("https://apiz.ebay.com/sell/account/v1/privilege", {
       headers: {
@@ -116,6 +151,31 @@ Deno.serve(async (req) => {
       const errText = await limitsRes.text();
       console.error("eBay privilege API error:", limitsRes.status, errText);
     }
+
+    const itemsLimitFromRest = getFirstNumber(limitsData, [
+      ["sellingLimit", "quantity"],
+      ["sellingLimit", "quantityLimit"],
+      ["sellingLimitQuantity"],
+      ["quantityLimit"],
+    ]);
+
+    const amountLimitFromRest = getFirstNumber(limitsData, [
+      ["sellingLimit", "amount", "value"],
+      ["sellingLimit", "amount"],
+      ["amountLimit", "value"],
+      ["amountLimit"],
+    ]);
+
+    const itemsLimitFromXml = asNumber(getTag(sellerInfo, "QuantityLimitRemaining"))
+      ?? asNumber(getTag(sellerInfo, "QuantityLimit"))
+      ?? 0;
+
+    const amountLimitFromXml = asNumber(getTag(sellerInfo, "AmountLimitRemaining"))
+      ?? asNumber(getTag(sellerInfo, "AmountLimit"))
+      ?? 0;
+
+    const itemsLimit = itemsLimitFromRest || itemsLimitFromXml;
+    const amountLimit = amountLimitFromRest || amountLimitFromXml;
 
     // Try to get store subscription info
     let subscription = "No Store";

@@ -141,6 +141,7 @@ function AutolisterContent() {
 
   useEffect(() => {
     if (!selectedStoreId || !user) return;
+    let cancelled = false;
     const fetchStoreInfo = async () => {
       setStoreInfoLoading(true);
       try {
@@ -152,15 +153,23 @@ function AutolisterContent() {
           .eq('id', selectedStoreId)
           .maybeSingle();
 
-        if (data && !error) setStoreInfo(data);
-        else setStoreInfo(null);
-      } catch {
-        setStoreInfo(null);
+        console.log('storeInfo fetch result:', { data, error, selectedStoreId });
+        if (!cancelled) {
+          if (data && !error) {
+            setStoreInfo(data);
+          } else {
+            setStoreInfo(null);
+          }
+        }
+      } catch (err) {
+        console.error('storeInfo fetch error:', err);
+        if (!cancelled) setStoreInfo(null);
       } finally {
-        setStoreInfoLoading(false);
+        if (!cancelled) setStoreInfoLoading(false);
       }
     };
     fetchStoreInfo();
+    return () => { cancelled = true; };
   }, [selectedStoreId, user]);
 
   const handlePoolList = async () => {

@@ -107,43 +107,31 @@ function AutolisterContent() {
   }, [selectedStoreId]);
 
   const handlePoolList = async () => {
-    if (!user) return;
     setPoolLoading(true);
     setPoolResults([]);
     try {
-      const { data: storeData } = await supabase
-        .from('ebay_stores')
-        .select('id, refresh_token')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .order('connected_at', { ascending: true })
-        .limit(1)
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Not logged in'); return; }
 
-      if (!storeData) {
-        toast.error('No eBay store connected');
-        return;
-      }
-
-      const res = await fetch('https://api.airborne.gg/list', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Secret': 'Roxie$!21518@19129',
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          store_id: storeData.id,
-          refresh_token: storeData.refresh_token,
-          quantity: poolQuantity,
-        }),
-      });
-
+      const res = await fetch(
+        'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            quantity: poolQuantity,
+            store_id: selectedStoreId,
+          }),
+        }
+      );
       const data = await res.json();
       if (data.error) {
         toast.error(data.error);
       } else {
-        toast.success(`Listed ${data.success} items successfully!`);
+        toast.success(`Listed ${data.success} of ${data.total} items!`);
         setPoolResults(data.results || []);
       }
     } catch {

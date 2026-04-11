@@ -372,24 +372,22 @@ function AutolisterContent() {
             )}
 
             {listingTab === "leads" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <label className="text-sm font-medium whitespace-nowrap">How many items to list?</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={25}
-                    value={poolQuantity}
-                    onChange={(e) => setPoolQuantity(Math.min(25, Math.max(1, parseInt(e.target.value) || 1)))}
-                    className="w-20 px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <Button
-                    onClick={handlePoolList}
-                    className="gradient-primary-bg text-primary-foreground rounded-lg gap-2"
-                  >
-                    {poolLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "List Items"}
-                  </Button>
-                </div>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">How many items to list? (max 25)</p>
+                <Input
+                  type="number"
+                  min={1}
+                  max={25}
+                  value={poolQuantity}
+                  onChange={(e) => setPoolQuantity(Math.min(25, Math.max(1, parseInt(e.target.value) || 1)))}
+                  className="rounded-lg h-11"
+                />
+                <Button
+                  onClick={handlePoolList}
+                  className="gradient-primary-bg text-primary-foreground rounded-lg gap-2"
+                >
+                  {poolLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "List Items"}
+                </Button>
                 {renderProgressSection(poolLoading, poolProgress, poolStatusText)}
                 {poolResults.length > 0 && renderResultsTable(poolResults)}
               </div>

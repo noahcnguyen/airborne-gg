@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Info } from "lucide-react";
+import { Plus, Info, Loader2, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthGuard } from "@/components/AuthGuard";
@@ -7,6 +7,15 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface StoreOption {
   id: string;
@@ -22,16 +31,26 @@ interface StoreInfo {
   amount_used: number;
 }
 
+interface PoolResult {
+  asin: string;
+  status: string;
+  ebay_url?: string;
+}
+
 function AutolisterContent() {
   const { user } = useAuth();
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
   const [listingTab, setListingTab] = useState<"products" | "leads" | "autopilot">("products");
   const [asinInput, setAsinInput] = useState("");
-  const [leadsCount, setLeadsCount] = useState("");
   const [autopilotCount, setAutopilotCount] = useState("300");
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
   const [storeInfoLoading, setStoreInfoLoading] = useState(false);
+
+  // Airborne's Pool state
+  const [poolQuantity, setPoolQuantity] = useState(5);
+  const [poolLoading, setPoolLoading] = useState(false);
+  const [poolResults, setPoolResults] = useState<PoolResult[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -86,6 +105,53 @@ function AutolisterContent() {
     };
     fetchStoreInfo();
   }, [selectedStoreId]);
+
+  const handlePoolList = async () => {
+    if (!user) return;
+    setPoolLoading(true);
+    setPoolResults([]);
+    try {
+      const { data: storeData } = await supabase
+        .from('ebay_stores')
+        .select('id, refresh_token')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('connected_at', { ascending: true })
+        .limit(1)
+        .single();
+
+      if (!storeData) {
+        toast.error('No eBay store connected');
+        return;
+      }
+
+      const res = await fetch('https://api.airborne.gg/list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Secret': 'Roxie$!21518@19129',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          store_id: storeData.id,
+          refresh_token: storeData.refresh_token,
+          quantity: poolQuantity,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        toast.error(data.error);
+      } else {
+        toast.success(`Listed ${data.success} items successfully!`);
+        setPoolResults(data.results || []);
+      }
+    } catch {
+      toast.error('Failed to connect to listing server');
+    } finally {
+      setPoolLoading(false);
+    }
+  };
 
   const listingTabs = [
     { id: "products" as const, label: "List My Products" },
@@ -144,16 +210,74 @@ function AutolisterContent() {
             )}
 
             {listingTab === "leads" && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">List up to 25 items at a time (numbers only)</p>
-                <Input
-                  type="number"
-                  placeholder="Enter a number (max 25)"
-                  value={leadsCount}
-                  onChange={(e) => setLeadsCount(e.target.value)}
-                  className="rounded-lg h-11"
-                />
-                <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">List</Button>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">How many items to list? (max 25)</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={25}
+                    placeholder="5"
+                    value={poolQuantity}
+                    onChange={(e) => setPoolQuantity(Math.min(25, Math.max(1, Number(e.target.value) || 1)))}
+                    className="rounded-lg h-11 w-32"
+                  />
+                </div>
+                <Button
+                  onClick={handlePoolList}
+                  disabled={poolLoading}
+                  className="gradient-primary-bg text-primary-foreground rounded-lg gap-2"
+                >
+                  {poolLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {poolLoading ? "Listing..." : "List Items"}
+                </Button>
+
+                {poolResults.length > 0 && (
+                  <div className="rounded-lg border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ASIN</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>eBay Listing</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {poolResults.map((result, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-mono text-sm">{result.asin}</TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center gap-1.5 text-sm ${
+                                result.status === 'success' ? 'text-green-400' : 'text-red-400'
+                              }`}>
+                                {result.status === 'success' ? (
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                ) : (
+                                  <XCircle className="h-3.5 w-3.5" />
+                                )}
+                                {result.status}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {result.ebay_url ? (
+                                <a
+                                  href={result.ebay_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                                >
+                                  View <ExternalLink className="h-3 w-3" />
+                                </a>
+                              ) : (
+                                <span className="text-sm text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </div>
             )}
 

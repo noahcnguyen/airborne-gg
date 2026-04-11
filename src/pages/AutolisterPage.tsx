@@ -140,30 +140,19 @@ function AutolisterContent() {
   }, [user]);
 
   useEffect(() => {
-    if (!selectedStoreId) return;
+    if (!selectedStoreId || !user) return;
     const fetchStoreInfo = async () => {
       setStoreInfoLoading(true);
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        let accessToken = session?.access_token;
+        const { data, error } = await supabase
+          .from('ebay_stores')
+          .select('subscription, free_listings, items_used, items_limit, amount_used, amount_limit')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .eq('id', selectedStoreId)
+          .maybeSingle();
 
-        if (sessionError || !session) {
-          const { data: refreshData } = await supabase.auth.refreshSession();
-          if (!refreshData.session) {
-            setStoreInfo(null);
-            setStoreInfoLoading(false);
-            return;
-          }
-          accessToken = refreshData.session.access_token;
-        }
-
-        const res = await fetch(
-          `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/ebay-store-info${selectedStoreId ? `?store_id=${selectedStoreId}` : ''}`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-        const data = await res.json();
-        console.log('Store info:', data);
-        if (data && !data.error) setStoreInfo(data);
+        if (data && !error) setStoreInfo(data);
         else setStoreInfo(null);
       } catch {
         setStoreInfo(null);
@@ -172,7 +161,7 @@ function AutolisterContent() {
       }
     };
     fetchStoreInfo();
-  }, [selectedStoreId]);
+  }, [selectedStoreId, user]);
 
   const handlePoolList = async () => {
     setPoolLoading(true);

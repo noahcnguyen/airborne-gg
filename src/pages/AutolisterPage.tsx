@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Info, Loader2, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,6 +52,73 @@ function AutolisterContent() {
   const [poolQuantity, setPoolQuantity] = useState(5);
   const [poolLoading, setPoolLoading] = useState(false);
   const [poolResults, setPoolResults] = useState<PoolResult[]>([]);
+  const [poolProgress, setPoolProgress] = useState(0);
+  const [poolStatusText, setPoolStatusText] = useState("");
+
+  // List My Products state
+  const [asinLoading, setAsinLoading] = useState(false);
+  const [asinResults, setAsinResults] = useState<PoolResult[]>([]);
+  const [asinProgress, setAsinProgress] = useState(0);
+  const [asinStatusText, setAsinStatusText] = useState("");
+
+  // Pool progress animation
+  useEffect(() => {
+    if (!poolLoading) return;
+    setPoolProgress(0);
+    const total = poolQuantity * 8000;
+    const interval = 100;
+    let elapsed = 0;
+    let currentItem = 1;
+    const itemInterval = 8000;
+    const timer = setInterval(() => {
+      elapsed += interval;
+      setPoolProgress(Math.min((elapsed / total) * 95, 95));
+      const newItem = Math.min(Math.floor(elapsed / itemInterval) + 1, poolQuantity);
+      if (newItem !== currentItem) currentItem = newItem;
+      setPoolStatusText(`Listing ${currentItem} of ${poolQuantity}...`);
+      if (elapsed >= total) clearInterval(timer);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [poolLoading, poolQuantity]);
+
+  // Pool completion
+  useEffect(() => {
+    if (!poolLoading && poolResults.length > 0) {
+      setPoolProgress(100);
+      const successCount = poolResults.filter(r => r.status === 'success').length;
+      setPoolStatusText(`${successCount}/${poolResults.length} listed successfully`);
+    }
+  }, [poolLoading, poolResults]);
+
+  // ASIN progress animation
+  useEffect(() => {
+    if (!asinLoading) return;
+    setAsinProgress(0);
+    const asinCount = asinInput.split(",").map(s => s.trim()).filter(Boolean).length || 1;
+    const total = asinCount * 8000;
+    const interval = 100;
+    let elapsed = 0;
+    let currentItem = 1;
+    const itemInterval = 8000;
+    const timer = setInterval(() => {
+      elapsed += interval;
+      setAsinProgress(Math.min((elapsed / total) * 95, 95));
+      const newItem = Math.min(Math.floor(elapsed / itemInterval) + 1, asinCount);
+      if (newItem !== currentItem) currentItem = newItem;
+      setAsinStatusText(`Listing ${currentItem} of ${asinCount}...`);
+      if (elapsed >= total) clearInterval(timer);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [asinLoading, asinInput]);
+
+  // ASIN completion
+  useEffect(() => {
+    if (!asinLoading && asinResults.length > 0) {
+      setAsinProgress(100);
+      const successCount = asinResults.filter(r => r.status === 'success').length;
+      setAsinStatusText(`${successCount}/${asinResults.length} listed successfully`);
+    }
+  }, [asinLoading, asinResults]);
 
   useEffect(() => {
     if (!user) return;
@@ -109,6 +177,8 @@ function AutolisterContent() {
   const handlePoolList = async () => {
     setPoolLoading(true);
     setPoolResults([]);
+    setPoolProgress(0);
+    setPoolStatusText("");
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Not logged in'); return; }
@@ -141,11 +211,108 @@ function AutolisterContent() {
     }
   };
 
+  const handleAsinList = async () => {
+    const asins = asinInput.split(",").map(s => s.trim()).filter(Boolean);
+    if (asins.length === 0) { toast.error("Enter at least one ASIN"); return; }
+    setAsinLoading(true);
+    setAsinResults([]);
+    setAsinProgress(0);
+    setAsinStatusText("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Not logged in'); return; }
+
+      const res = await fetch(
+        'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            asins,
+            store_id: selectedStoreId,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        toast.error(data.error);
+      } else {
+        toast.success(`Listed ${data.success} of ${data.total} items!`);
+        setAsinResults(data.results || []);
+      }
+    } catch {
+      toast.error('Failed to connect to listing server');
+    } finally {
+      setAsinLoading(false);
+    }
+  };
+
   const listingTabs = [
     { id: "products" as const, label: "List My Products" },
     { id: "leads" as const, label: "Airborne's Pool" },
     { id: "autopilot" as const, label: "Autopilot" },
   ];
+
+  const renderResultsTable = (results: PoolResult[]) => (
+    <div className="rounded-lg border overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ASIN</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>eBay Listing</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {results.map((result, idx) => (
+            <TableRow key={idx}>
+              <TableCell className="font-mono text-sm">{result.asin}</TableCell>
+              <TableCell>
+                <span className={`inline-flex items-center gap-1.5 text-sm ${
+                  result.status === 'success' ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {result.status === 'success' ? (
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <XCircle className="h-3.5 w-3.5" />
+                  )}
+                  {result.status}
+                </span>
+              </TableCell>
+              <TableCell>
+                {result.ebay_url ? (
+                  <a
+                    href={result.ebay_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    View <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+
+  const renderProgressSection = (loading: boolean, progress: number, statusText: string) => (
+    (loading || progress > 0) && (
+      <div className="space-y-2">
+        <Progress value={progress} className="h-2" />
+        <p className={`text-xs ${progress === 100 ? 'text-green-400 font-medium' : 'text-muted-foreground'}`}>
+          {statusText}
+        </p>
+      </div>
+    )
+  );
 
   return (
     <DashboardLayout
@@ -180,7 +347,7 @@ function AutolisterContent() {
             </div>
 
             {listingTab === "products" && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Enter up to 50 ASINs (comma separated)</p>
                   <button className="flex items-center gap-1.5 text-sm text-primary hover:underline font-medium">
@@ -193,7 +360,14 @@ function AutolisterContent() {
                   onChange={(e) => setAsinInput(e.target.value)}
                   className="rounded-lg h-11"
                 />
-                <Button className="gradient-primary-bg text-primary-foreground rounded-lg gap-2">List ASIN(s)</Button>
+                <Button
+                  onClick={handleAsinList}
+                  className="gradient-primary-bg text-primary-foreground rounded-lg gap-2"
+                >
+                  {asinLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "List ASIN(s)"}
+                </Button>
+                {renderProgressSection(asinLoading, asinProgress, asinStatusText)}
+                {asinResults.length > 0 && renderResultsTable(asinResults)}
               </div>
             )}
 
@@ -213,59 +387,12 @@ function AutolisterContent() {
                 </div>
                 <Button
                   onClick={handlePoolList}
-                  disabled={poolLoading}
                   className="gradient-primary-bg text-primary-foreground rounded-lg gap-2"
                 >
-                  {poolLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {poolLoading ? "Listing..." : "List Items"}
+                  {poolLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "List Items"}
                 </Button>
-
-                {poolResults.length > 0 && (
-                  <div className="rounded-lg border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ASIN</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>eBay Listing</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {poolResults.map((result, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell className="font-mono text-sm">{result.asin}</TableCell>
-                            <TableCell>
-                              <span className={`inline-flex items-center gap-1.5 text-sm ${
-                                result.status === 'success' ? 'text-green-400' : 'text-red-400'
-                              }`}>
-                                {result.status === 'success' ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5" />
-                                ) : (
-                                  <XCircle className="h-3.5 w-3.5" />
-                                )}
-                                {result.status}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              {result.ebay_url ? (
-                                <a
-                                  href={result.ebay_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                                >
-                                  View <ExternalLink className="h-3 w-3" />
-                                </a>
-                              ) : (
-                                <span className="text-sm text-muted-foreground">—</span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+                {renderProgressSection(poolLoading, poolProgress, poolStatusText)}
+                {poolResults.length > 0 && renderResultsTable(poolResults)}
               </div>
             )}
 

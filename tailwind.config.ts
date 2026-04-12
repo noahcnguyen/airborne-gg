@@ -99,6 +99,10 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-10deg)" },
+          "50%": { transform: "rotate(10deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -107,6 +111,7 @@ export default {
         "slide-in": "slide-in 0.4s ease-out forwards",
         float: "float 3s ease-in-out infinite",
         pulse_dot: "pulse_dot 2s ease-in-out infinite",
+        wiggle: "wiggle 0.5s ease-in-out infinite",
       },
     },
   },

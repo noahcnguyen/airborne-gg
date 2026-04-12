@@ -80,6 +80,7 @@ export function useOnboarding() {
     showTour,
     loading,
     currentStep,
+    setCurrentStep,
     totalSteps: TOUR_STEPS.length,
     step: TOUR_STEPS[currentStep],
     steps: TOUR_STEPS,

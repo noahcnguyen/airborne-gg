@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStoreData } from "@/hooks/useDashboardData";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { PulsingDot } from "@/components/dashboard/OnboardingTour";
 import {
   Select,
   SelectContent,

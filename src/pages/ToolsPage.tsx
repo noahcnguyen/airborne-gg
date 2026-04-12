@@ -10,19 +10,20 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
 function ManualOrderPanel() {
-  const { user } = useAuth();
   const [orderId, setOrderId] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!orderId.trim() || !user) return;
+    if (!orderId.trim()) return;
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const res = await fetch("https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/manual-order", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ebay_order_id: orderId.trim(), user_id: user.id }),
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ ebay_order_id: orderId.trim() }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || data.message || "Request failed");

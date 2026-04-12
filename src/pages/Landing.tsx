@@ -314,10 +314,13 @@ function Footer() {
           <div className="flex items-center gap-2 font-bold text-lg">
             <Plane className="h-5 w-5 text-primary" />Airborne
           </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+            <Link to="/terms-of-service" className="hover:text-foreground transition-colors">Terms of Service</Link>
+            <Link to="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <a href="https://discord.gg/V7K9V7qzD7" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Join Our Discord</a>
           </div>
           <p className="text-sm text-muted-foreground">© 2026 Airborne.gg</p>
         </div>

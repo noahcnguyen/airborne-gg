@@ -168,21 +168,14 @@ function OrdersContent() {
       </div>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>
           {detailLoading ? (
             <div className="py-8 text-center text-muted-foreground">Loading...</div>
           ) : orderDetail ? (
-            <div className="space-y-3 text-sm max-h-[60vh] overflow-y-auto">
-              {Object.entries(orderDetail).map(([key, value]) => (
-                <div key={key} className="flex justify-between gap-4">
-                  <span className="text-muted-foreground font-medium">{key}</span>
-                  <span className="text-right break-all">{typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}</span>
-                </div>
-              ))}
-            </div>
+            <OrderDetailView detail={orderDetail} />
           ) : (
             <div className="py-8 text-center text-muted-foreground">No details available.</div>
           )}

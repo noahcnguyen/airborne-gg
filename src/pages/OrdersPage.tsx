@@ -63,6 +63,34 @@ function OrdersContent() {
     refetchInterval: 60000,
   });
 
+  const handleOrderDoubleClick = useCallback(async (ebayOrderId: string) => {
+    setDetailLoading(true);
+    setDetailOpen(true);
+    setOrderDetail(null);
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/order-details?ebay_order_id=${ebayOrderId}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${currentSession?.access_token}`,
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch order details");
+      const data = await response.json();
+      setOrderDetail(data);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load order details");
+      setDetailOpen(false);
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
+
   return (
     <DashboardLayout
       title="Orders"

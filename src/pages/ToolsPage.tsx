@@ -19,7 +19,7 @@ function ManualOrderPanel() {
     if (!orderId.trim() || !user) return;
     setLoading(true);
     try {
-      const res = await fetch("https://api.airborne.gg/manual_order", {
+      const res = await fetch("https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/manual-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ebay_order_id: orderId.trim(), user_id: user.id }),
@@ -77,7 +77,7 @@ function AsinLookupPanel() {
     setError(null);
     try {
       const res = await fetch(
-        `https://api.airborne.gg/asin_lookup?legacy_id=${encodeURIComponent(legacyId.trim())}&user_id=${user.id}`
+        `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/asin-lookup?legacy_id=${encodeURIComponent(legacyId.trim())}&user_id=${user.id}`
       );
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || data.message || "Lookup failed");

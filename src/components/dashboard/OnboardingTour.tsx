@@ -49,13 +49,12 @@ export function PulsingDot({ isActive, step, stepIndex, totalSteps, onAdvance, o
     <Popover open={isActive && open} onOpenChange={(v) => { if (!v) setOpen(false); }}>
       <PopoverTrigger asChild>
         <button
-          className="relative ml-auto flex-shrink-0 w-3 h-3 cursor-pointer focus:outline-none z-50"
+          className="absolute -top-1.5 -right-1.5 flex-shrink-0 w-5 h-5 cursor-pointer focus:outline-none z-50 animate-[wiggle_0.5s_ease-in-out_infinite]"
           aria-label={`Tour step: ${step.title}`}
           onClick={handleDotClick}
           type="button"
         >
-          <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
-          <span className="relative block w-3 h-3 rounded-full bg-primary" />
+          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-warning text-white text-[11px] font-bold leading-none shadow-sm">!</span>
         </button>
       </PopoverTrigger>
       <PopoverContent side="right" align="start" sideOffset={12} className="w-72 p-4 rounded-xl shadow-lg border bg-popover z-[1000]">

@@ -2,6 +2,7 @@ import { Lock, Plus, Store, X, ArrowUpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { StoreData } from "@/hooks/useDashboardData";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
@@ -29,20 +30,15 @@ const PLAN_CONFIG: Record<string, { stores: number; listings: number; label: str
   pro: { stores: 3, listings: 25000, label: "Pro Plan: 3 stores allowed, 25,000 listings per store · 75,000 total listings." },
 };
 
-function getSubscriptionPlan(stores: StoreData[]): string {
-  const sub = stores[0]?.subscription;
-  if (sub && PLAN_CONFIG[sub.toLowerCase()]) return sub.toLowerCase();
-  return "starter";
-}
-
 function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
 export function StoresTab({ stores, loading, onStoresChanged }: StoresTabProps) {
   const { user } = useAuth();
+  const { plan: userPlan } = useUserPlan();
 
-  const plan = getSubscriptionPlan(stores);
+  const plan = (userPlan && PLAN_CONFIG[userPlan.toLowerCase()]) ? userPlan.toLowerCase() : "starter";
   const config = PLAN_CONFIG[plan];
   const storeLimit = config.stores;
   const listingLimit = config.listings;

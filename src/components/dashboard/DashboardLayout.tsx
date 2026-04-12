@@ -84,7 +84,7 @@ export function DashboardLayout({ children, title, stores, selectedStoreId, onSt
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                   location.pathname === item.path
                     ? "bg-accent text-primary font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent/50"

@@ -71,7 +71,7 @@ function OrderDetailView({ detail }: { detail: any }) {
   const profitColor = profitCents > 0 ? 'text-green-600' : 'text-red-600';
 
   return (
-    <div className="max-h-[65vh] overflow-y-auto space-y-1 text-sm">
+    <div className="max-h-[65vh] overflow-y-auto space-y-1 text-sm pr-2 custom-scrollbar">
       {/* Order Info */}
       <SectionHeader title="Order Info" />
       <DetailRow label="eBay Order ID" value={detail.ebay_order_id} />
@@ -273,7 +273,7 @@ function OrdersContent() {
       </div>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>

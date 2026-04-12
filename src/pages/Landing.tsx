@@ -204,9 +204,10 @@ function HowItWorks() {
 }
 
 const plans = [
-  { name: 'Starter', price: 49, listings: '2,500', stores: '1 Store', popular: false },
-  { name: 'Advanced', price: 99, listings: '10,000', stores: '1 Store', popular: true },
-  { name: 'Pro', price: 199, listings: '25,000', stores: '3 Stores', popular: false },
+  { name: 'Starter', price: 49, subtitle: '1,000 listings · 1 Store', popular: false, multiStore: false },
+  { name: 'Growth', price: 79, subtitle: '2,500 listings · 1 Store', popular: false, multiStore: false },
+  { name: 'Advanced', price: 129, subtitle: '10,000 listings per store · 2 Stores · 20,000 total listings', popular: true, multiStore: true },
+  { name: 'Pro', price: 219, subtitle: '25,000 listings per store · 3 Stores · 75,000 total listings', popular: false, multiStore: true },
 ];
 const planFeatures = ['Automated Listing Importer', 'Smart Order Fulfillment', 'Real-Time Tracking Sync', 'Price & Profit Monitoring', '24/7 Monitoring'];
 
@@ -218,13 +219,13 @@ function Pricing() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
           <p className="text-muted-foreground">All plans include full automation. Scale when you're ready.</p>
         </motion.div>
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto mb-10">
           {plans.map((p, i) => (
             <motion.div key={p.name} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} transition={{ delay: i * 0.1 }}
               className={`relative bg-card rounded-xl border p-7 ${p.popular ? 'border-primary shadow-lg shadow-primary/15 ring-1 ring-primary/20' : ''}`}>
               {p.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary-bg text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">Most Popular</div>}
               <h3 className="font-bold text-lg mb-1">{p.name}</h3>
-              <p className="text-muted-foreground text-sm mb-4">{p.listings} listings · {p.stores}</p>
+              <p className="text-muted-foreground text-sm mb-4">{p.subtitle}</p>
               <div className="mb-6">
                 <span className="text-4xl font-extrabold">${p.price}</span>
                 <span className="text-muted-foreground text-sm">/mo</span>
@@ -234,8 +235,8 @@ function Pricing() {
                   <li key={f} className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-success flex-shrink-0" />{f}</li>
                 ))}
                 <li className="flex items-center gap-2 text-sm">
-                  <Check className={`h-4 w-4 flex-shrink-0 ${p.name === 'Starter' ? 'text-muted-foreground/30' : 'text-success'}`} />
-                  <span className={p.name === 'Starter' ? 'text-muted-foreground/50' : ''}>Multi-Store Management</span>
+                  <Check className={`h-4 w-4 flex-shrink-0 ${p.multiStore ? 'text-success' : 'text-muted-foreground/30'}`} />
+                  <span className={p.multiStore ? '' : 'text-muted-foreground/50'}>Multi-Store Management</span>
                 </li>
               </ul>
               <Link to="/login">

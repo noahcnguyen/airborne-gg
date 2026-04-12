@@ -43,6 +43,9 @@ function OrdersContent() {
   const { session } = useAuth();
   const { data: stores = [] } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+  const [orderDetail, setOrderDetail] = useState<any>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     if (stores.length > 0 && !selectedStoreId) {

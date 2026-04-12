@@ -39,7 +39,112 @@ async function fetchOrders(storeId: string, accessToken: string) {
   return data || [];
 }
 
-function OrdersContent() {
+function cents(v: any): string {
+  const n = Number(v);
+  if (isNaN(n)) return '—';
+  return `$${(n / 100).toFixed(2)}`;
+}
+
+function DetailRow({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
+  return (
+    <div className="flex justify-between gap-4 py-1.5">
+      <span className="text-muted-foreground text-sm">{label}</span>
+      <span className={`text-sm text-right break-all ${className || ''}`}>{value ?? '—'}</span>
+    </div>
+  );
+}
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <div className="pt-4 pb-2 border-b mb-2">
+      <h4 className="text-sm font-semibold tracking-wide text-foreground">{title}</h4>
+    </div>
+  );
+}
+
+function OrderDetailView({ detail }: { detail: any }) {
+  const buyer = detail.buyer || {};
+  const items = Array.isArray(detail.items) ? detail.items : detail.item ? [detail.item] : [];
+  const payment = detail.payment || {};
+
+  const profitCents = Number(detail.actual_profit_cents);
+  const profitColor = profitCents > 0 ? 'text-green-600' : 'text-red-600';
+
+  return (
+    <div className="max-h-[65vh] overflow-y-auto space-y-1 text-sm">
+      {/* Order Info */}
+      <SectionHeader title="Order Info" />
+      <DetailRow label="eBay Order ID" value={detail.ebay_order_id} />
+      <DetailRow label="Status" value={detail.state} />
+      <DetailRow label="Created" value={detail.created_at ? new Date(detail.created_at).toLocaleString() : '—'} />
+      {detail.amazon_order_id && (
+        <DetailRow label="Amazon Order ID" value={detail.amazon_order_id} />
+      )}
+      {detail.amazon_url && (
+        <DetailRow label="Amazon URL" value={
+          <a href={detail.amazon_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            View on Amazon
+          </a>
+        } />
+      )}
+
+      {/* Shipping */}
+      <SectionHeader title="Shipping" />
+      <DetailRow label="Carrier" value={detail.tracking_carrier || '—'} />
+      <DetailRow label="Tracking" value={
+        detail.tracking_number ? (
+          <a href={`https://www.google.com/search?q=${detail.tracking_number}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            {detail.tracking_number}
+          </a>
+        ) : '—'
+      } />
+      {buyer.name && <DetailRow label="Name" value={buyer.name} />}
+      {buyer.phone && <DetailRow label="Phone" value={buyer.phone} />}
+      {buyer.address_line_1 && <DetailRow label="Address Line 1" value={buyer.address_line_1} />}
+      {buyer.address_line_2 && <DetailRow label="Address Line 2" value={buyer.address_line_2} />}
+      {(buyer.city || buyer.state || buyer.zip) && (
+        <DetailRow label="City, State ZIP" value={`${buyer.city || ''}, ${buyer.state || ''} ${buyer.zip || ''}`.trim()} />
+      )}
+      {buyer.country && <DetailRow label="Country" value={buyer.country} />}
+
+      {/* Items */}
+      {items.length > 0 && (
+        <>
+          <SectionHeader title="Item" />
+          {items.map((item: any, i: number) => {
+            const qty = Number(item.quantity) || 1;
+            const price = Number(item.price_cents || item.item_price_cents);
+            const itemTotal = isNaN(price) ? null : qty * price;
+            return (
+              <div key={i} className={i > 0 ? 'pt-3 border-t' : ''}>
+                {item.title && <DetailRow label="Title" value={item.title} />}
+                {item.legacy_item_id && <DetailRow label="Legacy Item ID" value={item.legacy_item_id} />}
+                <DetailRow label="Quantity" value={qty} />
+                {!isNaN(price) && <DetailRow label="Item Price" value={cents(price)} />}
+                {itemTotal !== null && <DetailRow label="Item Total" value={cents(itemTotal)} />}
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {/* Payment */}
+      <SectionHeader title="Payment" />
+      {payment.subtotal_cents != null && <DetailRow label="Subtotal" value={cents(payment.subtotal_cents)} />}
+      {payment.shipping_cents != null && <DetailRow label="Shipping" value={cents(payment.shipping_cents)} />}
+      {payment.sales_tax_cents != null && <DetailRow label="Sales Tax" value={cents(payment.sales_tax_cents)} />}
+      <DetailRow label="Order Total" value={cents(detail.order_total_cents)} className="font-bold" />
+      {detail.ebay_fee_cents != null && (
+        <DetailRow label="eBay Fee" value={`-${cents(detail.ebay_fee_cents)}`} className="text-red-600" />
+      )}
+      <DetailRow label="Order Earnings" value={cents(detail.payout_estimate_cents)} className="font-bold" />
+      <DetailRow label="Amazon Cost" value={cents(detail.actual_amazon_total_cents)} />
+      <DetailRow label="Profit" value={cents(detail.actual_profit_cents)} className={`font-bold ${profitColor}`} />
+    </div>
+  );
+}
+
+
   const { session } = useAuth();
   const { data: stores = [] } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");

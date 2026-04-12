@@ -53,6 +53,7 @@ export function DashboardLayout({ children, title, stores, selectedStoreId, onSt
   const location = useLocation();
   const { storeData } = useStoreData();
   const { planLabel } = useUserPlan();
+  const { showTour, currentStep, totalSteps, step, steps, advanceStep, skipTour } = useOnboarding();
 
   const handleSignOut = async () => {
     await signOut();

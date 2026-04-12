@@ -486,7 +486,7 @@ function AutolisterContent() {
 
 export default function AutolisterPage() {
   return (
-    <AuthGuard>
+    <AuthGuard requireSubscription>
       <AutolisterContent />
     </AuthGuard>
   );

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useUserPlan } from '@/hooks/useUserPlan';
+import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 interface AmazonAccount {
   id: string;
@@ -211,6 +212,66 @@ function AmazonAccountModal({ onSave, editId, saving }: { onSave: (form: AmazonF
   );
 }
 
+function BillingSection() {
+  const { plan, subscription_status, trial_ends_at, loading: subLoading } = useSubscriptionGuard();
+
+  const handleManageBilling = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(
+        "https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/create-portal",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${session?.access_token}`,
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const { url } = await response.json();
+      if (url) window.location.href = url;
+      else toast.error('Failed to open billing portal');
+    } catch {
+      toast.error('Something went wrong');
+    }
+  };
+
+  const statusLabel = subscription_status === 'trialing' ? 'Trialing' : subscription_status === 'active' ? 'Active' : subscription_status === 'inactive' ? 'Inactive' : subscription_status || 'No subscription';
+  const statusColor = subscription_status === 'active' || subscription_status === 'trialing' ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive';
+  const planName = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' Plan' : 'Free Plan';
+
+  return (
+    <div className="bg-card rounded-xl border p-6">
+      <h2 className="font-semibold text-lg mb-5">Airborne Subscription</h2>
+      <div className="flex items-start gap-5">
+        <div className="w-12 h-12 rounded-xl gradient-primary-bg flex items-center justify-center flex-shrink-0">
+          <CreditCard className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div className="flex-1 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-base">{subLoading ? '...' : planName}</p>
+              <p className="text-sm text-muted-foreground">Status: {subLoading ? '...' : statusLabel}</p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor}`}>{statusLabel}</span>
+          </div>
+          {subscription_status === 'trialing' && trial_ends_at && (
+            <div className="bg-surface-1 rounded-lg border p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Calendar className="h-3.5 w-3.5" /> Trial Ends</div>
+              <p className="text-sm font-medium">{new Date(trial_ends_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-3 pt-1">
+            <Button variant="outline" size="sm" className="rounded-md gap-2" onClick={handleManageBilling}><ExternalLink className="h-3.5 w-3.5" /> Manage Billing</Button>
+          </div>
+          <p className="text-xs text-muted-foreground">Billing is managed through Stripe. You'll be redirected to a secure portal to update payment methods or cancel.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SettingsContent() {
   const { user, signOut } = useAuth();
   const { planLabel } = useUserPlan();
@@ -386,6 +447,7 @@ function SettingsContent() {
     }
   };
 
+
   return (
     <div className="min-h-screen flex bg-surface-1">
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r flex flex-col z-40">
@@ -554,38 +616,7 @@ function SettingsContent() {
           </div>
 
           {/* Subscription */}
-          <div className="bg-card rounded-xl border p-6">
-            <h2 className="font-semibold text-lg mb-5">Airborne Subscription</h2>
-            <div className="flex items-start gap-5">
-              <div className="w-12 h-12 rounded-xl gradient-primary-bg flex items-center justify-center flex-shrink-0">
-                <CreditCard className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div className="flex-1 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-base">{planLabel || <span className="opacity-0">Loading</span>}</p>
-                    <p className="text-sm text-muted-foreground">$49.99/month</p>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-success/15 text-success text-xs font-medium">Active</span>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="bg-surface-1 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Calendar className="h-3.5 w-3.5" /> Current Period</div>
-                    <p className="text-sm font-medium">Apr 9 – May 9, 2026</p>
-                  </div>
-                  <div className="bg-surface-1 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Calendar className="h-3.5 w-3.5" /> Next Renewal</div>
-                    <p className="text-sm font-medium">May 9, 2026</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-3 pt-1">
-                  <Button variant="outline" size="sm" className="rounded-md gap-2" onClick={() => toast.info('Stripe billing portal will be connected soon.')}><ExternalLink className="h-3.5 w-3.5" /> Manage Billing</Button>
-                  <Button variant="ghost" size="sm" className="rounded-md gap-2 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => toast.info('Stripe cancellation flow will be connected soon.')}>Cancel Plan</Button>
-                </div>
-                <p className="text-xs text-muted-foreground">Billing is managed through Stripe. You'll be redirected to a secure portal to update payment methods or cancel.</p>
-              </div>
-            </div>
-          </div>
+          <BillingSection />
         </main>
       </div>
     </div>

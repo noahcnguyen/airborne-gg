@@ -22,7 +22,7 @@ function ManualOrderPanel() {
       const token = session?.access_token;
       const res = await fetch("https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/manual-order", {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { "Authorization": `Bearer ${token}`, "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90", "Content-Type": "application/json" },
         body: JSON.stringify({ ebay_order_id: orderId.trim() }),
       });
       const data = await res.json().catch(() => ({}));
@@ -80,7 +80,7 @@ function AsinLookupPanel() {
       const token = session?.access_token;
       const res = await fetch(
         `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/asin-lookup?legacy_id=${encodeURIComponent(legacyId.trim())}`,
-        { headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } }
+        { headers: { "Authorization": `Bearer ${token}`, "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90", "Content-Type": "application/json" } }
       );
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || data.message || "Lookup failed");

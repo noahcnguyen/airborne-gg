@@ -102,10 +102,10 @@ function Hero() {
               The Fastest Way to Scale Your <span className="text-gradient">eBay Dropshipping</span> Business
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Automate listings, fulfill orders, and sync tracking — all from one dashboard. Connect your Amazon and eBay accounts and let Airborne handle the rest.
+              Automate listings, fulfill orders, and sync tracking — all from one dashboard. Connect your eBay and Amazon accounts and let Airborne handle the rest.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/login"><Button size="lg" className="gradient-primary-bg text-primary-foreground rounded-md px-8 text-base">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+              <Link to="/login"><Button size="lg" className="gradient-primary-bg text-primary-foreground rounded-md px-8 text-base">Start for $1 <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
               <a href="#how-it-works"><Button size="lg" variant="outline" className="rounded-md px-8 text-base">See How It Works</Button></a>
             </div>
           </motion.div>
@@ -205,8 +205,8 @@ function HowItWorks() {
 
 const plans = [
   { name: 'Starter', price: 49, listings: '2,500', stores: '1 Store', popular: false },
-  { name: 'Advanced', price: 99, listings: '10,000', stores: '2 Stores', popular: true },
-  { name: 'Pro', price: 179, listings: '20,000', stores: '5 Stores', popular: false },
+  { name: 'Advanced', price: 99, listings: '10,000', stores: '1 Store', popular: true },
+  { name: 'Pro', price: 199, listings: '25,000', stores: '3 Stores', popular: false },
 ];
 const planFeatures = ['Automated Listing Importer', 'Smart Order Fulfillment', 'Real-Time Tracking Sync', 'Price & Profit Monitoring', '24/7 Monitoring'];
 
@@ -240,18 +240,13 @@ function Pricing() {
               </ul>
               <Link to="/login">
                 <Button className={`w-full rounded-md ${p.popular ? 'gradient-primary-bg text-primary-foreground' : ''}`} variant={p.popular ? 'default' : 'outline'}>
-                  Get Started
+                  Start for $1
                 </Button>
               </Link>
             </motion.div>
           ))}
         </div>
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-          className="max-w-4xl mx-auto bg-foreground rounded-xl p-6 text-center text-primary-foreground">
-          <p className="text-lg font-bold mb-1">🚀 $79/mo locked forever — <span className="text-gradient">Founding Member Rate</span></p>
-          <p className="text-primary-foreground/60 text-sm">Join now and lock in the lowest price. Includes all Advanced features.</p>
-        </motion.div>
-        <p className="text-center text-sm text-muted-foreground mt-6">💳 $1 per order fulfilled. Pay for what you use.</p>
+        <p className="text-center text-sm text-muted-foreground mt-6">$1 per order fulfilled. Extra stores $49/mo.</p>
       </div>
     </section>
   );
@@ -264,7 +259,7 @@ const faqs = [
   { q: 'Is eBay dropshipping allowed?', a: 'Yes. eBay allows dropshipping as long as you fulfill orders within the stated handling time and provide tracking. Airborne ensures you stay compliant.' },
   { q: 'What happens if prices or stock change?', a: 'Airborne monitors your listings 24/7. If an Amazon price increases or stock runs out, your eBay listing is automatically updated or paused.' },
   { q: 'Can I manage multiple eBay stores?', a: 'Yes. The Advanced plan supports 2 stores and the Pro plan supports up to 5. Each store is managed independently.' },
-  { q: 'How do fulfillment credits work?', a: 'Each order fulfilled through Airborne costs $1. Credits are purchased in advance and deducted per order. No hidden fees.' },
+  { q: 'How does the $1 per order fee work?', a: 'Every time Airborne successfully fulfills an order on Amazon, a $1 fulfillment fee is charged to your account. You only pay when orders are actually fulfilled — no hidden fees.' },
 ];
 
 function FAQ() {
@@ -299,10 +294,10 @@ function CTASection() {
       <div className="container mx-auto px-4">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
           className="gradient-primary-bg rounded-2xl p-12 text-center text-primary-foreground">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Start Scaling with Airborne Today</h2>
-          <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">Join the waitlist and be the first to access the most powerful eBay dropshipping automation platform.</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Your eBay store, on autopilot.</h2>
+          <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">Start for $1. 3 days to see exactly what Airborne does to your store.</p>
           <Link to="/login"><Button size="lg" className="bg-primary-foreground text-foreground hover:bg-primary-foreground/90 rounded-md px-8 text-base font-semibold">
-            Join the Waitlist <ArrowRight className="ml-2 h-4 w-4" />
+            Start for $1 <ArrowRight className="ml-2 h-4 w-4" />
           </Button></Link>
         </motion.div>
       </div>

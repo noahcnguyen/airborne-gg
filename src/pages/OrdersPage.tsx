@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useStores } from "@/hooks/useStores";
@@ -41,6 +43,9 @@ function OrdersContent() {
   const { session } = useAuth();
   const { data: stores = [] } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+  const [orderDetail, setOrderDetail] = useState<any>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     if (stores.length > 0 && !selectedStoreId) {
@@ -57,6 +62,34 @@ function OrdersContent() {
     refetchOnWindowFocus: false,
     refetchInterval: 60000,
   });
+
+  const handleOrderDoubleClick = useCallback(async (ebayOrderId: string) => {
+    setDetailLoading(true);
+    setDetailOpen(true);
+    setOrderDetail(null);
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/order-details?ebay_order_id=${ebayOrderId}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${currentSession?.access_token}`,
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch order details");
+      const data = await response.json();
+      setOrderDetail(data);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load order details");
+      setDetailOpen(false);
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
 
   return (
     <DashboardLayout
@@ -91,7 +124,7 @@ function OrdersContent() {
                 {orders.map((order: any) => {
                   const trackingUrl = getTrackingUrl(order.tracking_carrier, order.tracking_number);
                   return (
-                    <tr key={order.ebay_order_id} className="border-b hover:bg-muted/50">
+                    <tr key={order.ebay_order_id} className="border-b hover:bg-muted/50 cursor-pointer" onDoubleClick={() => handleOrderDoubleClick(order.ebay_order_id)}>
                       <td className="py-3 px-4 font-mono text-xs">{order.ebay_order_id}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -133,6 +166,28 @@ function OrdersContent() {
           </div>
         )}
       </div>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+          </DialogHeader>
+          {detailLoading ? (
+            <div className="py-8 text-center text-muted-foreground">Loading...</div>
+          ) : orderDetail ? (
+            <div className="space-y-3 text-sm max-h-[60vh] overflow-y-auto">
+              {Object.entries(orderDetail).map(([key, value]) => (
+                <div key={key} className="flex justify-between gap-4">
+                  <span className="text-muted-foreground font-medium">{key}</span>
+                  <span className="text-right break-all">{typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">No details available.</div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

@@ -139,7 +139,7 @@ export default function ToolsPage() {
   return (
     <AuthGuard>
       <DashboardLayout title="Tools">
-        <div className="grid grid-cols-1 gap-6 max-w-2xl">
+        <div className="grid grid-cols-1 gap-6">
           <ManualOrderPanel />
           <AsinLookupPanel />
         </div>

@@ -124,7 +124,7 @@ function OrdersContent() {
                 {orders.map((order: any) => {
                   const trackingUrl = getTrackingUrl(order.tracking_carrier, order.tracking_number);
                   return (
-                    <tr key={order.ebay_order_id} className="border-b hover:bg-muted/50">
+                    <tr key={order.ebay_order_id} className="border-b hover:bg-muted/50 cursor-pointer" onDoubleClick={() => handleOrderDoubleClick(order.ebay_order_id)}>
                       <td className="py-3 px-4 font-mono text-xs">{order.ebay_order_id}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -166,6 +166,28 @@ function OrdersContent() {
           </div>
         )}
       </div>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+          </DialogHeader>
+          {detailLoading ? (
+            <div className="py-8 text-center text-muted-foreground">Loading...</div>
+          ) : orderDetail ? (
+            <div className="space-y-3 text-sm max-h-[60vh] overflow-y-auto">
+              {Object.entries(orderDetail).map(([key, value]) => (
+                <div key={key} className="flex justify-between gap-4">
+                  <span className="text-muted-foreground font-medium">{key}</span>
+                  <span className="text-right break-all">{typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">No details available.</div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

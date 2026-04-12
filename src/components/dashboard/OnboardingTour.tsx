@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -18,36 +19,53 @@ interface PulsingDotProps {
   totalSteps: number;
   onAdvance: () => void;
   onSkip: () => void;
+  onActivate: () => void;
 }
 
-export function PulsingDot({ isActive, step, stepIndex, totalSteps, onAdvance, onSkip }: PulsingDotProps) {
+export function PulsingDot({ isActive, step, stepIndex, totalSteps, onAdvance, onSkip, onActivate }: PulsingDotProps) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
-  if (!isActive) return null;
+  const handleDotClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onActivate();
+    setOpen(true);
+  };
 
   const handleAction = () => {
+    setOpen(false);
     if (step.navigateTo) {
       navigate(step.navigateTo);
     }
     onAdvance();
   };
 
+  const handleSkip = () => {
+    setOpen(false);
+    onSkip();
+  };
+
   return (
-    <Popover open={undefined}>
+    <Popover open={isActive && open} onOpenChange={(v) => { if (!v) setOpen(false); }}>
       <PopoverTrigger asChild>
-        <button className="relative ml-auto flex-shrink-0 w-3 h-3 focus:outline-none" aria-label={`Tour step: ${step.title}`}>
+        <button
+          className="relative ml-auto flex-shrink-0 w-3 h-3 cursor-pointer focus:outline-none z-50"
+          aria-label={`Tour step: ${step.title}`}
+          onClick={handleDotClick}
+          type="button"
+        >
           <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
           <span className="relative block w-3 h-3 rounded-full bg-primary" />
         </button>
       </PopoverTrigger>
-      <PopoverContent side="right" align="start" sideOffset={12} className="w-72 p-4 rounded-xl shadow-lg border bg-popover z-[60]">
+      <PopoverContent side="right" align="start" sideOffset={12} className="w-72 p-4 rounded-xl shadow-lg border bg-popover z-[1000]">
         <h4 className="font-semibold text-sm text-foreground mb-1">{step.title}</h4>
         <p className="text-xs text-muted-foreground leading-relaxed mb-4">{step.description}</p>
         <Button size="sm" className="w-full text-xs" onClick={handleAction}>
           {step.buttonText}
         </Button>
         <div className="flex items-center justify-between mt-3">
-          <button onClick={onSkip} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={handleSkip} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
             Skip tour
           </button>
           <span className="text-[10px] text-muted-foreground">{stepIndex + 1} of {totalSteps}</span>

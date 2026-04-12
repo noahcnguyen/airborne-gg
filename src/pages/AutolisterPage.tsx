@@ -172,6 +172,20 @@ function AutolisterContent() {
     return () => { cancelled = true; };
   }, [selectedStoreId, user]);
 
+  const handleListingError = (data: { error: string; error_code?: string }) => {
+    const upgradeErrors = ['airborne_plan_limit_reached', 'airborne_store_limit_reached'];
+    if (data.error_code && upgradeErrors.includes(data.error_code)) {
+      toast.error(data.error, {
+        action: {
+          label: 'Upgrade Plan',
+          onClick: () => window.open('https://www.airborne.gg/#pricing', '_blank'),
+        },
+      });
+    } else {
+      toast.error(data.error);
+    }
+  };
+
   const handlePoolList = async () => {
     setPoolLoading(true);
     setPoolResults([]);

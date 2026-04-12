@@ -120,6 +120,11 @@ function DashboardContent() {
       searchParams.delete("ebay");
       setSearchParams(searchParams, { replace: true });
     }
+    if (searchParams.get("billing") === "success") {
+      toast.success("Welcome to Airborne! Your 3-day trial has started.");
+      searchParams.delete("billing");
+      setSearchParams(searchParams, { replace: true });
+    }
   }, [searchParams, setSearchParams]);
 
   const { data: dashboardData, isLoading } = useQuery({

@@ -197,10 +197,13 @@ function AutolisterContent() {
       );
       const data = await res.json();
       if (data.error) {
-        toast.error(data.error);
+        handleListingError(data);
       } else {
         toast.success(`Listed ${data.success} of ${data.total} items!`);
         setPoolResults(data.results || []);
+        if (data.ebay_limit_warning) {
+          toast.warning(data.ebay_limit_warning);
+        }
       }
     } catch {
       toast.error('Failed to connect to listing server');
@@ -236,10 +239,13 @@ function AutolisterContent() {
       );
       const data = await res.json();
       if (data.error) {
-        toast.error(data.error);
+        handleListingError(data);
       } else {
         toast.success(`Listed ${data.success} of ${data.total} items!`);
         setAsinResults(data.results || []);
+        if (data.ebay_limit_warning) {
+          toast.warning(data.ebay_limit_warning);
+        }
       }
     } catch {
       toast.error('Failed to connect to listing server');

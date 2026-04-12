@@ -63,6 +63,8 @@ export interface StoreData {
   connected_at: string;
   access_token_expires_at: string;
   is_active: boolean;
+  items_used?: number;
+  subscription?: string;
 }
 
 export function useStoreData() {
@@ -80,7 +82,7 @@ export function useStoreData() {
       try {
         const { data } = await supabase
           .from("ebay_stores")
-          .select("id, ebay_username, connected_at, access_token_expires_at, is_active")
+          .select("id, ebay_username, connected_at, access_token_expires_at, is_active, items_used, subscription")
           .eq("user_id", user.id)
           .eq("is_active", true)
           .order("connected_at", { ascending: true });
@@ -102,7 +104,7 @@ export function useStoreData() {
     try {
       const { data } = await supabase
         .from("ebay_stores")
-        .select("id, ebay_username, connected_at, access_token_expires_at, is_active")
+        .select("id, ebay_username, connected_at, access_token_expires_at, is_active, items_used, subscription")
         .eq("user_id", user.id)
         .eq("is_active", true)
         .order("connected_at", { ascending: true });

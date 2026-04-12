@@ -63,7 +63,6 @@ function ManualOrderPanel() {
 }
 
 function AsinLookupPanel() {
-  const { user } = useAuth();
   const [legacyId, setLegacyId] = useState("");
   const [loading, setLoading] = useState(false);
   const [asin, setAsin] = useState<string | null>(null);
@@ -72,13 +71,16 @@ function AsinLookupPanel() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!legacyId.trim() || !user) return;
+    if (!legacyId.trim()) return;
     setLoading(true);
     setAsin(null);
     setError(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const res = await fetch(
-        `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/asin-lookup?legacy_id=${encodeURIComponent(legacyId.trim())}&user_id=${user.id}`
+        `https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/asin-lookup?legacy_id=${encodeURIComponent(legacyId.trim())}`,
+        { headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } }
       );
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || data.message || "Lookup failed");

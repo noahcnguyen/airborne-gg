@@ -76,20 +76,41 @@ export function DashboardLayout({ children, title, stores, selectedStoreId, onSt
           <span className="font-bold text-lg text-foreground">Airborne</span>
         </div>
         <nav className="flex-1 px-3 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                location.pathname === item.path
-                  ? "bg-accent text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-              }`}
-            >
-              <item.icon className="h-4.5 w-4.5" />
-              {item.label}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const tourStepIndex = showTour ? steps.findIndex((s) => s.navPath === item.path) : -1;
+            const isActiveTourStep = showTour && tourStepIndex === currentStep;
+
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  location.pathname === item.path
+                    ? "bg-accent text-primary font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                }`}
+              >
+                <item.icon className="h-4.5 w-4.5" />
+                {item.label}
+                {showTour && tourStepIndex >= 0 && (
+                  <PulsingDot
+                    isActive={isActiveTourStep}
+                    step={steps[tourStepIndex]}
+                    stepIndex={currentStep}
+                    totalSteps={totalSteps}
+                    onAdvance={advanceStep}
+                    onSkip={skipTour}
+                  />
+                )}
+                {showTour && tourStepIndex >= 0 && !isActiveTourStep && (
+                  <span className="relative ml-auto flex-shrink-0 w-3 h-3">
+                    <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
+                    <span className="relative block w-3 h-3 rounded-full bg-primary" />
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-3">

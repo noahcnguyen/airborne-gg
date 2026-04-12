@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   ShoppingCart,
   List,
+  Wrench,
   Store,
   Settings,
   Bell,
@@ -31,6 +32,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: ShoppingCart, label: "Orders", path: "/orders" },
   { icon: List, label: "Autolister", path: "/autolister" },
+  { icon: Wrench, label: "Tools", path: "/tools" },
   { icon: Store, label: "My Stores", path: "/stores" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

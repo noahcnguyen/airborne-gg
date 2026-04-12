@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import OrdersPage from "./pages/OrdersPage";
 import AutolisterPage from "./pages/AutolisterPage";
 import StoresPage from "./pages/StoresPage";
+import ToolsPage from "./pages/ToolsPage";
 import SettingsPage from "./pages/SettingsPage";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/autolister" element={<AutolisterPage />} />
+            <Route path="/tools" element={<ToolsPage />} />
             <Route path="/stores" element={<StoresPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />

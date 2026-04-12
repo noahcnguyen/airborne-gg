@@ -140,7 +140,7 @@ function AsinLookupPanel() {
 
 export default function ToolsPage() {
   return (
-    <AuthGuard>
+    <AuthGuard requireSubscription>
       <DashboardLayout title="Tools">
         <div className="grid grid-cols-1 gap-6">
           <ManualOrderPanel />

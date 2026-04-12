@@ -94,19 +94,14 @@ export function DashboardLayout({ children, title, stores, selectedStoreId, onSt
                 {item.label}
                 {showTour && tourStepIndex >= 0 && (
                   <PulsingDot
-                    isActive={isActiveTourStep}
+                    isActive={tourStepIndex === currentStep}
                     step={steps[tourStepIndex]}
                     stepIndex={currentStep}
                     totalSteps={totalSteps}
                     onAdvance={advanceStep}
                     onSkip={skipTour}
+                    onActivate={() => setCurrentStep(tourStepIndex)}
                   />
-                )}
-                {showTour && tourStepIndex >= 0 && !isActiveTourStep && (
-                  <span className="relative ml-auto flex-shrink-0 w-3 h-3">
-                    <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
-                    <span className="relative block w-3 h-3 rounded-full bg-primary" />
-                  </span>
                 )}
               </button>
             );

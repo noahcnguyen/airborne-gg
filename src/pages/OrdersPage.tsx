@@ -273,7 +273,7 @@ function OrdersContent() {
       </div>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>

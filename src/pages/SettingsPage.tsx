@@ -272,7 +272,7 @@ function BillingSection() {
   );
 }
 
-
+function SettingsContent() {
   const { user, signOut } = useAuth();
   const { planLabel } = useUserPlan();
   const navigate = useNavigate();

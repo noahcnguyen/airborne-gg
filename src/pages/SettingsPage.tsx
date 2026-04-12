@@ -447,27 +447,6 @@ function BillingSection() {
     }
   };
 
-  const handleManageBilling = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(
-        "https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/create-portal",
-        {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${session?.access_token}`,
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const { url } = await response.json();
-      if (url) window.location.href = url;
-      else toast.error('Failed to open billing portal');
-    } catch {
-      toast.error('Something went wrong');
-    }
-  };
 
   return (
     <div className="min-h-screen flex bg-surface-1">

@@ -144,7 +144,7 @@ function OrderDetailView({ detail }: { detail: any }) {
   );
 }
 
-
+function OrdersContent() {
   const { session } = useAuth();
   const { data: stores = [] } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");

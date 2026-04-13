@@ -313,7 +313,7 @@ function AutolisterContent() {
           {results.map((result, idx) => (
             <TableRow key={idx}>
               <TableCell className="font-mono text-sm">{result.asin}</TableCell>
-              <TableCell>
+              <TableCell className="text-right">
                 <span className={`inline-flex items-center gap-1.5 text-sm ${
                   result.status === 'success' ? 'text-green-400' : 'text-red-400'
                 }`}>

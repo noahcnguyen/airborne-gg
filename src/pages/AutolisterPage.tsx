@@ -259,9 +259,14 @@ function AutolisterContent() {
     setAsinProgress(0);
     setAsinStatusText("");
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast.error('Not logged in'); return; }
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (!session || sessionError) {
+        console.error('[Autolister] No session found:', sessionError);
+        toast.error('Not logged in — please refresh and try again');
+        return;
+      }
       console.log('[Autolister] user_id:', session.user.id);
+      console.log('[Autolister] session token:', session.access_token?.substring(0, 20));
 
       const requestBody = {
         asins,

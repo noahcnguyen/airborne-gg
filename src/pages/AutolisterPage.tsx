@@ -245,6 +245,12 @@ function AutolisterContent() {
       if (!session) { toast.error('Not logged in'); return; }
       console.log('[Autolister] user_id:', session.user.id);
 
+      const requestBody = {
+        asins,
+        store_id: selectedStoreId,
+      };
+      console.log('[Autolister] Sending ASIN request:', requestBody);
+
       const res = await fetch(
         'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
         {
@@ -253,13 +259,11 @@ function AutolisterContent() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({
-            asins,
-            store_id: selectedStoreId,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
       const data = await res.json();
+      console.log('[Autolister] ASIN response:', data);
       if (data.error) {
         handleListingError(data);
       } else {

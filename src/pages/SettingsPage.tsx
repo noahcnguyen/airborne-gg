@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plane, LayoutDashboard, ShoppingCart, List, Store, Settings, LogOut, ChevronRight, Eye, EyeOff, Plus, X, Shield, Link2, CreditCard, ExternalLink, Calendar } from 'lucide-react';
+import { Plane, LayoutDashboard, ShoppingCart, List, Wrench, Store, Settings, LogOut, ChevronRight, Eye, EyeOff, Plus, X, Shield, Link2, CreditCard, ExternalLink, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,9 +46,10 @@ const emptyForm: AmazonFormData = {
 };
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: ShoppingCart, label: 'Orders', path: '/orders' },
   { icon: List, label: 'Autolister', path: '/autolister' },
+  { icon: Wrench, label: 'Tools', path: '/tools' },
   { icon: Store, label: 'My Stores', path: '/stores' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];

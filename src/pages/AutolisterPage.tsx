@@ -306,7 +306,7 @@ function AutolisterContent() {
         <TableHeader>
           <TableRow>
             <TableHead>ASIN</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

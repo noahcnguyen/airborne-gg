@@ -187,6 +187,7 @@ function AutolisterContent() {
   };
 
   const handlePoolList = async () => {
+    console.log('[Autolister] Pool List button clicked, quantity:', poolQuantity, 'store:', selectedStoreId);
     setPoolLoading(true);
     setPoolResults([]);
     setPoolProgress(0);
@@ -194,6 +195,13 @@ function AutolisterContent() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Not logged in'); return; }
+      console.log('[Autolister] user_id:', session.user.id);
+
+      const requestBody = {
+        quantity: poolQuantity,
+        store_id: selectedStoreId,
+      };
+      console.log('[Autolister] Sending pool request:', requestBody);
 
       const res = await fetch(
         'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
@@ -203,13 +211,11 @@ function AutolisterContent() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({
-            quantity: poolQuantity,
-            store_id: selectedStoreId,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
       const data = await res.json();
+      console.log('[Autolister] Pool response:', data);
       if (data.error) {
         handleListingError(data);
       } else {
@@ -229,6 +235,7 @@ function AutolisterContent() {
   const handleAsinList = async () => {
     const asins = asinInput.split(",").map(s => s.trim()).filter(Boolean);
     if (asins.length === 0) { toast.error("Enter at least one ASIN"); return; }
+    console.log('[Autolister] ASIN List button clicked, asins:', asins, 'store:', selectedStoreId);
     setAsinLoading(true);
     setAsinResults([]);
     setAsinProgress(0);
@@ -236,6 +243,13 @@ function AutolisterContent() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Not logged in'); return; }
+      console.log('[Autolister] user_id:', session.user.id);
+
+      const requestBody = {
+        asins,
+        store_id: selectedStoreId,
+      };
+      console.log('[Autolister] Sending ASIN request:', requestBody);
 
       const res = await fetch(
         'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
@@ -245,13 +259,11 @@ function AutolisterContent() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({
-            asins,
-            store_id: selectedStoreId,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
       const data = await res.json();
+      console.log('[Autolister] ASIN response:', data);
       if (data.error) {
         handleListingError(data);
       } else {

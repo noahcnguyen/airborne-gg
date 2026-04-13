@@ -210,6 +210,7 @@ function AutolisterContent() {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90',
           },
           body: JSON.stringify(requestBody),
         }
@@ -219,7 +220,7 @@ function AutolisterContent() {
       if (data.error) {
         handleListingError(data);
       } else {
-        toast.success(`Listed ${data.success} of ${data.total} items!`);
+        toast.success(`Listed ${data.success ?? 0} of ${data.total ?? 0} items!`);
         setPoolResults(data.results || []);
         if (data.ebay_limit_warning) {
           toast.warning(data.ebay_limit_warning);
@@ -258,6 +259,7 @@ function AutolisterContent() {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90',
           },
           body: JSON.stringify(requestBody),
         }
@@ -267,7 +269,7 @@ function AutolisterContent() {
       if (data.error) {
         handleListingError(data);
       } else {
-        toast.success(`Listed ${data.success} of ${data.total} items!`);
+        toast.success(`Listed ${data.success ?? 0} of ${data.total ?? 0} items!`);
         setAsinResults(data.results || []);
         if (data.ebay_limit_warning) {
           toast.warning(data.ebay_limit_warning);

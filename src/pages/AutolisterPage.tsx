@@ -307,7 +307,6 @@ function AutolisterContent() {
           <TableRow>
             <TableHead>ASIN</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>eBay Listing</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -325,19 +324,6 @@ function AutolisterContent() {
                   )}
                   {result.status}
                 </span>
-              </TableCell>
-              <TableCell>
-                {result.ebay_url ? (
-                  <a
-                    href={result.ebay_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                  >
-                    View <ExternalLink className="h-3 w-3" />
-                  </a>
-                ) : (
-                  <span className="text-sm text-muted-foreground">—</span>
                 )}
               </TableCell>
             </TableRow>

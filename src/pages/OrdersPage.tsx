@@ -291,9 +291,5 @@ function OrdersContent() {
 }
 
 export default function OrdersPage() {
-  return (
-    <AuthGuard requireSubscription>
-      <OrdersContent />
-    </AuthGuard>
-  );
+  return <OrdersContent />;
 }

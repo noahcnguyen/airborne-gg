@@ -187,6 +187,7 @@ function AutolisterContent() {
   };
 
   const handlePoolList = async () => {
+    console.log('[Autolister] Pool List button clicked, quantity:', poolQuantity, 'store:', selectedStoreId);
     setPoolLoading(true);
     setPoolResults([]);
     setPoolProgress(0);
@@ -194,6 +195,7 @@ function AutolisterContent() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Not logged in'); return; }
+      console.log('[Autolister] user_id:', session.user.id);
 
       const res = await fetch(
         'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
@@ -229,6 +231,7 @@ function AutolisterContent() {
   const handleAsinList = async () => {
     const asins = asinInput.split(",").map(s => s.trim()).filter(Boolean);
     if (asins.length === 0) { toast.error("Enter at least one ASIN"); return; }
+    console.log('[Autolister] ASIN List button clicked, asins:', asins, 'store:', selectedStoreId);
     setAsinLoading(true);
     setAsinResults([]);
     setAsinProgress(0);
@@ -236,6 +239,7 @@ function AutolisterContent() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Not logged in'); return; }
+      console.log('[Autolister] user_id:', session.user.id);
 
       const res = await fetch(
         'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',

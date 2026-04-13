@@ -207,27 +207,19 @@ function AutolisterContent() {
         store_id: selectedStoreId,
       };
 
-      const url = 'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing';
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90',
-      };
+      console.log('[Autolister] Invoking trigger-listing with:', JSON.stringify(requestBody));
 
-      console.log('[Autolister] FETCH URL:', url);
-      console.log('[Autolister] FETCH HEADERS:', JSON.stringify(headers));
-      console.log('[Autolister] FETCH BODY:', JSON.stringify(requestBody));
-      console.log('[Autolister] About to call fetch...');
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(requestBody),
+      const { data, error: fnError } = await supabase.functions.invoke('trigger-listing', {
+        body: requestBody,
       });
 
-      console.log('[Autolister] Response received! status:', res.status, res.statusText);
-      const data = await res.json();
-      console.log('[Autolister] Response body:', JSON.stringify(data));
+      console.log('[Autolister] Response:', JSON.stringify(data), 'Error:', fnError);
+
+      if (fnError) {
+        console.error('[Autolister] Edge function error:', fnError);
+        toast.error('Failed to connect to listing server');
+        return;
+      }
 
       if (data.error) {
         handleListingError(data);
@@ -274,20 +266,18 @@ function AutolisterContent() {
       };
       console.log('[Autolister] Sending ASIN request:', requestBody);
 
-      const res = await fetch(
-        'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-      const data = await res.json();
-      console.log('[Autolister] ASIN response:', data);
+      const { data, error: fnError } = await supabase.functions.invoke('trigger-listing', {
+        body: requestBody,
+      });
+
+      console.log('[Autolister] ASIN response:', data, 'Error:', fnError);
+
+      if (fnError) {
+        console.error('[Autolister] Edge function error:', fnError);
+        toast.error('Failed to connect to listing server');
+        return;
+      }
+
       if (data.error) {
         handleListingError(data);
       } else {

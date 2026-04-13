@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { DashboardAuthLayout } from "@/components/DashboardAuthLayout";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -33,15 +34,18 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/autolister" element={<AutolisterPage />} />
-            <Route path="/tools" element={<ToolsPage />} />
-            <Route path="/stores" element={<StoresPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            {/* All dashboard pages share a single AuthGuard via layout route */}
+            <Route element={<DashboardAuthLayout requireSubscription />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/autolister" element={<AutolisterPage />} />
+              <Route path="/tools" element={<ToolsPage />} />
+              <Route path="/stores" element={<StoresPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

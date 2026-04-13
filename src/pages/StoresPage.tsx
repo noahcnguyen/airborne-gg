@@ -14,9 +14,5 @@ function StoresContent() {
 }
 
 export default function StoresPage() {
-  return (
-    <AuthGuard>
-      <StoresContent />
-    </AuthGuard>
-  );
+  return <StoresContent />;
 }

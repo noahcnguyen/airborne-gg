@@ -140,13 +140,11 @@ function AsinLookupPanel() {
 
 export default function ToolsPage() {
   return (
-    <AuthGuard requireSubscription>
-      <DashboardLayout title="Tools">
-        <div className="grid grid-cols-1 gap-6">
-          <ManualOrderPanel />
-          <AsinLookupPanel />
-        </div>
-      </DashboardLayout>
-    </AuthGuard>
+    <DashboardLayout title="Tools">
+      <div className="grid grid-cols-1 gap-6">
+        <ManualOrderPanel />
+        <AsinLookupPanel />
+      </div>
+    </DashboardLayout>
   );
 }

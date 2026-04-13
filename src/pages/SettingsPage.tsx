@@ -625,9 +625,5 @@ function SettingsContent() {
 }
 
 export default function SettingsPage() {
-  return (
-    <AuthGuard>
-      <SettingsContent />
-    </AuthGuard>
-  );
+  return <SettingsContent />;
 }

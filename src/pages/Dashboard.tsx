@@ -154,9 +154,5 @@ function DashboardContent() {
 }
 
 export default function Dashboard() {
-  return (
-    <AuthGuard requireSubscription>
-      <DashboardContent />
-    </AuthGuard>
-  );
+  return <DashboardContent />;
 }

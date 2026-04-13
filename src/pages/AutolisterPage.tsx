@@ -324,7 +324,6 @@ function AutolisterContent() {
                   )}
                   {result.status}
                 </span>
-                )}
               </TableCell>
             </TableRow>
           ))}

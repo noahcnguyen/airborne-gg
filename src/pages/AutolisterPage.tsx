@@ -196,27 +196,35 @@ function AutolisterContent() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Not logged in'); return; }
       console.log('[Autolister] user_id:', session.user.id);
+      console.log('[Autolister] access_token length:', session.access_token?.length);
 
       const requestBody = {
         quantity: poolQuantity,
         store_id: selectedStoreId,
       };
-      console.log('[Autolister] Sending pool request:', requestBody);
 
-      const res = await fetch(
-        'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const url = 'https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/trigger-listing';
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90',
+      };
+
+      console.log('[Autolister] FETCH URL:', url);
+      console.log('[Autolister] FETCH HEADERS:', JSON.stringify(headers));
+      console.log('[Autolister] FETCH BODY:', JSON.stringify(requestBody));
+      console.log('[Autolister] About to call fetch...');
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('[Autolister] Response received! status:', res.status, res.statusText);
       const data = await res.json();
-      console.log('[Autolister] Pool response:', data);
+      console.log('[Autolister] Response body:', JSON.stringify(data));
+
       if (data.error) {
         handleListingError(data);
       } else {
@@ -226,7 +234,12 @@ function AutolisterContent() {
           toast.warning(data.ebay_limit_warning);
         }
       }
-    } catch {
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('[Autolister] CATCH ERROR:', error);
+      console.error('[Autolister] Error name:', error?.name);
+      console.error('[Autolister] Error message:', error?.message);
+      console.error('[Autolister] Error stack:', error?.stack);
       toast.error('Failed to connect to listing server');
     } finally {
       setPoolLoading(false);

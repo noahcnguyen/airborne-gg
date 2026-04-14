@@ -36,7 +36,9 @@ interface StoreInfo {
 interface PoolResult {
   asin: string;
   status: string;
-  ebay_url?: string;
+  listing_id?: string;
+  url?: string;
+  error?: string;
 }
 
 function AutolisterContent() {
@@ -295,7 +297,16 @@ function AutolisterContent() {
         <TableBody>
           {results.map((result, idx) => (
             <TableRow key={idx}>
-              <TableCell className="font-mono text-sm">{result.asin}</TableCell>
+              <TableCell className="font-mono text-sm">
+                {result.status === 'success' && result.url ? (
+                  <a href={result.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5">
+                    {result.asin}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : (
+                  result.asin
+                )}
+              </TableCell>
               <TableCell className="text-right">
                 <span className={`inline-flex items-center gap-1.5 text-sm ${
                   result.status === 'success' ? 'text-green-400' : 'text-red-400'
@@ -305,7 +316,7 @@ function AutolisterContent() {
                   ) : (
                     <XCircle className="h-3.5 w-3.5" />
                   )}
-                  {result.status}
+                  {result.status === 'success' ? 'Listed' : 'Failed'}
                 </span>
               </TableCell>
             </TableRow>

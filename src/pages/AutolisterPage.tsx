@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -40,8 +41,7 @@ interface PoolResult {
 
 function AutolisterContent() {
   const { user } = useAuth();
-  const [stores, setStores] = useState<StoreOption[]>([]);
-  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+  const { stores, selectedStoreId, setSelectedStoreId } = useStoreContext();
   const [listingTab, setListingTab] = useState<"products" | "leads" | "autopilot">("products");
   const [asinInput, setAsinInput] = useState("");
   const [autopilotCount, setAutopilotCount] = useState("300");

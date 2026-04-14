@@ -20,16 +20,22 @@ function ManualOrderPanel() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      const res = await fetch("https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/manual-order", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}`, "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90", "Content-Type": "application/json" },
-        body: JSON.stringify({ ebay_order_id: orderId.trim() }),
-      });
+      const url = "https://dopntxyftolkcrbumgbb.supabase.co/functions/v1/manual-order";
+      const headers = {
+        "Authorization": `Bearer ${token}`,
+        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvcG50eHlmdG9sa2NyYnVtZ2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTgyNzIsImV4cCI6MjA5MTI3NDI3Mn0.XlJ6hNFR-2ZJFHUZu2vS2uxwsv_z8mMH_1FQuJS2n90",
+        "Content-Type": "application/json",
+      };
+      const body = JSON.stringify({ ebay_order_id: orderId.trim() });
+      console.log("Manual Order Request:", { url, method: "POST", headers, body });
+      const res = await fetch(url, { method: "POST", headers, body });
       const data = await res.json().catch(() => ({}));
+      console.log("Manual Order Response:", { status: res.status, ok: res.ok, data });
       if (!res.ok) throw new Error(data.error || data.message || "Request failed");
       toast.success("Manual order created successfully.");
       setOrderId("");
     } catch (err: any) {
+      console.error("Manual Order Error:", err);
       toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);

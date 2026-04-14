@@ -120,24 +120,7 @@ function AutolisterContent() {
     }
   }, [asinLoading, asinResults]);
 
-  useEffect(() => {
-    if (!user) return;
-    const fetchStores = async () => {
-      const { data } = await supabase
-        .from("ebay_stores")
-        .select("id, ebay_username, connected_at, is_active")
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .order("connected_at", { ascending: true });
-      if (data) {
-        setStores(data);
-        if (data.length > 0 && !selectedStoreId) {
-          setSelectedStoreId(data[0].id);
-        }
-      }
-    };
-    fetchStores();
-  }, [user]);
+  // Store info fetch removed — stores come from StoreContext
 
   useEffect(() => {
     if (!selectedStoreId || !user) return;

@@ -36,7 +36,9 @@ interface StoreInfo {
 interface PoolResult {
   asin: string;
   status: string;
-  ebay_url?: string;
+  listing_id?: string;
+  url?: string;
+  error?: string;
 }
 
 function AutolisterContent() {

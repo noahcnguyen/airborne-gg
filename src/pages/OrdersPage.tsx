@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { useStores } from "@/hooks/useStores";
+import { useStoreContext } from "@/contexts/StoreContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -146,17 +146,10 @@ function OrderDetailView({ detail }: { detail: any }) {
 
 function OrdersContent() {
   const { session } = useAuth();
-  const { data: stores = [] } = useStores();
-  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+  const { stores, selectedStoreId, setSelectedStoreId } = useStoreContext();
   const [orderDetail, setOrderDetail] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
-
-  useEffect(() => {
-    if (stores.length > 0 && !selectedStoreId) {
-      setSelectedStoreId(stores[0].id);
-    }
-  }, [stores, selectedStoreId]);
 
   const { data: orders = [] } = useQuery({
     queryKey: ["orders", selectedStoreId],

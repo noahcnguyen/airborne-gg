@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
+import { StoreProvider } from '@/contexts/StoreContext';
 
 export function DashboardAuthLayout({ requireSubscription = false }: { requireSubscription?: boolean }) {
   const { session, loading } = useAuth();
@@ -23,5 +24,9 @@ export function DashboardAuthLayout({ requireSubscription = false }: { requireSu
     return <Navigate to="/pricing" replace state={{ from: location.pathname }} />;
   }
 
-  return <Outlet />;
+  return (
+    <StoreProvider>
+      <Outlet />
+    </StoreProvider>
+  );
 }

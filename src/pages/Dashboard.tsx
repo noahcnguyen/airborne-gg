@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { OverviewTab } from "@/components/dashboard/OverviewTab";
-import { useStores } from "@/hooks/useStores";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
@@ -104,15 +104,7 @@ async function fetchDashboardData(selectedStoreId: string, accessToken: string, 
 function DashboardContent() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { session } = useAuth();
-  const { data: stores = [] } = useStores();
-  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
-
-  // Auto-select first store
-  useEffect(() => {
-    if (stores.length > 0 && !selectedStoreId) {
-      setSelectedStoreId(stores[0].id);
-    }
-  }, [stores, selectedStoreId]);
+  const { stores, selectedStoreId, setSelectedStoreId } = useStoreContext();
 
   useEffect(() => {
     if (searchParams.get("ebay") === "connected") {

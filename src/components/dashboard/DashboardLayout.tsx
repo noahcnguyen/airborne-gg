@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 import { useStoreData } from "@/hooks/useDashboardData";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -24,11 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface StoreOption {
-  id: string;
-  ebay_username: string;
-}
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -42,13 +38,17 @@ const navItems = [
 interface DashboardLayoutProps {
   children: React.ReactNode;
   title: string;
-  stores?: StoreOption[];
+  stores?: { id: string; ebay_username: string }[];
   selectedStoreId?: string;
   onStoreChange?: (storeId: string) => void;
 }
 
-export function DashboardLayout({ children, title, stores, selectedStoreId, onStoreChange }: DashboardLayoutProps) {
+export function DashboardLayout({ children, title, stores: storesProp, selectedStoreId: selectedProp, onStoreChange: onChangeProp }: DashboardLayoutProps) {
   const { user, signOut } = useAuth();
+  const storeCtx = useStoreContext();
+  const stores = storesProp ?? storeCtx.stores;
+  const selectedStoreId = selectedProp ?? storeCtx.selectedStoreId;
+  const onStoreChange = onChangeProp ?? storeCtx.setSelectedStoreId;
   const navigate = useNavigate();
   const location = useLocation();
   const { storeData } = useStoreData();

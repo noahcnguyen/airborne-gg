@@ -67,11 +67,11 @@ function AutolisterContent() {
   useEffect(() => {
     if (!poolLoading) return;
     setPoolProgress(0);
-    const total = poolQuantity * 8000;
-    const interval = 100;
+    const total = poolQuantity * 15000;
+    const interval = 200;
     let elapsed = 0;
     let currentItem = 1;
-    const itemInterval = 8000;
+    const itemInterval = 15000;
     const timer = setInterval(() => {
       elapsed += interval;
       setPoolProgress(Math.min((elapsed / total) * 95, 95));
@@ -97,11 +97,11 @@ function AutolisterContent() {
     if (!asinLoading) return;
     setAsinProgress(0);
     const asinCount = asinInput.split(",").map(s => s.trim()).filter(Boolean).length || 1;
-    const total = asinCount * 8000;
-    const interval = 100;
+    const total = asinCount * 15000;
+    const interval = 200;
     let elapsed = 0;
     let currentItem = 1;
-    const itemInterval = 8000;
+    const itemInterval = 15000;
     const timer = setInterval(() => {
       elapsed += interval;
       setAsinProgress(Math.min((elapsed / total) * 95, 95));
